@@ -54,9 +54,10 @@ class RC(
             } catch (e: Exception) {
                 addErrorMessage("Badly formed 'meta.json' in $repoName: ${e.message}")
                 null
-            } ?: getManifestFromRepoName(repoName)
+            } ?: mapOf()// TODO: getManifestFromRepoName(repoName)
         } else {
-            getManifestFromRepoName(repoName)
+            // TODO: getManifestFromRepoName(repoName)
+            mapOf()
         }
     }
 
@@ -102,33 +103,43 @@ class RC(
             val resource = manifest.getOrDefault("dublin_core", null)
                 ?: manifest.getOrDefault("resource", null)
                 ?: manifest
-            _resource = Resource(this, resource as? Map<String, Any?>)
+            _resource = Resource(this, resource as? Map<String, Any?> ?: mapOf())
             _resource!!
         }
 
     val checkingEntity: List<String>
-        get() = manifest.getOrDefault("checking", mapOf())
-            .getOrDefault("checking_entity", listOf("Wycliffe Associates")) as? List<String>
+        get() = manifest["checking"]
+//            .getOrDefault("checking_entity", listOf("Wycliffe Associates"))
+                as? List<String>
             ?: listOf("Wycliffe Associates")
 
     val checkingLevel: String
-        get() = manifest.getOrDefault("checking", mapOf())
-            .getOrDefault("checking_level", "1") as? String
+        get() = manifest.getOrDefault("checking", null)
+//            .getOrDefault("checking_level", "1")
+                as? String
             ?: "1"
 
     val projects: List<Project>
-        get() = _projects.ifEmpty {
-            val projects = manifest.getOrDefault("projects", listOf<Map<String, Any?>>())
-                .map { Project(this, it) }
-                .ifEmpty {
-                    manifest.getOrDefault("project", null)
-                        ?.let { Project(this, it as? Map<String, Any?>) }
-                        ?.let { listOf(it) }
-                        ?: listOf(Project(this))
+        get() {
+            if (_projects.isEmpty()) {
+                if ("projects" in manifest && manifest["projects"] is List<*>) {
+                    val projectList = manifest["projects"] as List<*>
+                    for (p in projectList) {
+                        val project = Project(this, p as Map<String, Any>)
+                        _projects.add(project)
+                    }
+                } else if ("project" in manifest && manifest["project"] is Map<*, *>) {
+                    val projectMap = manifest["project"] as Map<*, *>
+                    val project = Project(this, projectMap as Map<String, Any>)
+                    _projects.add(project)
                 }
-            _projects.addAll(projects)
-            _projects
+                if (_projects.isEmpty()) {
+                    _projects.add(Project(this, mapOf())) // will rely on info in the resource
+                }
+            }
+            return _projects
         }
+
 
     val projectsAsDict: List<Map<String, Any?>>
         get() = projects.map { it.asDict() }
@@ -212,5 +223,5 @@ class RC(
 //            }
 //        }
 //        return project.tocYaml
-    }
+//    }
 }

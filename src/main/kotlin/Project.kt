@@ -28,6 +28,7 @@ class Project(private val rc: RC, project: Map<String, Any?>? = null) {
                             .toString()
                             .lowercase()
                             .ifEmpty { rc.resource.identifier }
+                            ?: ""
                     }
             }
 

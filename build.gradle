@@ -10,6 +10,12 @@ repositories {
 }
 
 dependencies {
+    def jacksonVer = '2.15.1'
+
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVer"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVer"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:$jacksonVer"
+
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 

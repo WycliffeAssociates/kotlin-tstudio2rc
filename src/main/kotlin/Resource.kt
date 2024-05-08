@@ -5,6 +5,7 @@ import java.util.*
 class Resource(private val rc: RC, resource: Map<String, Any?>) {
 
     private val resource: Map<String, Any?>
+    private var _language: Language? = null
 
     init {
         require(rc is RC) { "Invalid RC instance" }
@@ -81,32 +82,34 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
     val issued: String
         get() {
             val issuedResult = resource.getOrDefault("issued", null)
-            return when (issuedResult) {
-                is String -> issuedResult
-                is Date -> issuedResult.formatDate()
-                is DateTime -> issuedResult.formatDate()
-                else -> (resource.getOrDefault("status", mapOf<String, Any?>()) as? Map<String, Any?>)
-                    ?.getOrDefault("pub_date", null)
-                    ?.let {
-                        when (it) {
-                            is String -> it
-                            is Date -> it.formatDate()
-                            is DateTime -> it.formatDate()
-                            else -> DateTime.now().formatDate()
-                        }
-                    } ?: DateTime.now().formatDate()
-            }
+            return issuedResult as? String ?: ""
+//            return when (issuedResult) {
+//                is String -> issuedResult
+//                is Date -> issuedResult.formatDate()
+//                is DateTime -> issuedResult.formatDate()
+//                else -> (resource.getOrDefault("status", mapOf<String, Any?>()) as? Map<String, Any?>)
+//                    ?.getOrDefault("pub_date", null)
+//                    ?.let {
+//                        when (it) {
+//                            is String -> it
+//                            is Date -> it.formatDate()
+//                            is DateTime -> it.formatDate()
+//                            else -> DateTime.now().formatDate()
+//                        }
+//                    } ?: DateTime.now().formatDate()
+//            }
         }
 
     val modified: String
         get() {
             val modifiedResult = resource.getOrDefault("modified", null)
-            return when (modifiedResult) {
-                is String -> modifiedResult
-                is Date -> modifiedResult.formatDate()
-                is DateTime -> modifiedResult.formatDate()
-                else -> DateTime.now().formatDate()
-            }
+            return modifiedResult as? String ?: ""
+//            return when (modifiedResult) {
+//                is String -> modifiedResult
+//                is Date -> modifiedResult.formatDate()
+//                is DateTime -> modifiedResult.formatDate()
+//                else -> DateTime.now().formatDate()
+//            }
         }
 
     val rights: String
@@ -118,11 +121,11 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
     val language: Language
         get() {
             if (_language == null) {
-                _language = (resource.getOrDefault("language", null) as? Map<String, Any?>)
+                _language = (resource.getOrDefault("language", null) as? Map<String, String>)
                     ?.let { Language(rc, it) }
-                    ?: (resource.getOrDefault("target_language", null) as? Map<String, Any?>)
+                    ?: (resource.getOrDefault("target_language", null) as? Map<String, String>)
                         ?.let { Language(rc, it) }
-                            ?: (rc.manifest.getOrDefault("target_language", null) as? Map<String, Any?>)
+                            ?: (rc.manifest.getOrDefault("target_language", null) as? Map<String, String>)
                         ?.let { Language(rc, it) }
                             ?: Language(rc, mapOf("identifier" to "en", "title" to "English", "direction" to "ltr"))
             }
@@ -187,12 +190,10 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
     val version: String
         get() = resource.getOrDefault("version", "1") as? String ?: "1"
 
-    private var _language: Language? = null
-
-    private fun Date.formatDate(): String {
-        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd")
-        return formatter.print(this)
-    }
+//    private fun Date.formatDate(): String {
+//        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+//        return formatter.print(this)
+//    }
 
     companion object {
         private fun loadYamlObject(filePath: String): Map<String, Any?>? {
