@@ -24,3 +24,12 @@ fun loadJsonObject(path: String): Map<String, Any> {
 fun addErrorMessage(message: String) {
 
 }
+
+fun getVersification(): Map<String, BookVersification> {
+    val mapper = ObjectMapper(JsonFactory())
+        .registerKotlinModule()
+
+    val path = BookVersification::class.java.classLoader.getResource("verse_counts.json").file
+
+    return mapper.readValue(File(path))
+}
