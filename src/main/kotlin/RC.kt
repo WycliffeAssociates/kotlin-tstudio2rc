@@ -1,5 +1,9 @@
 package org.wycliffeassociates
 
+import org.wycliffeassociates.resourcecontainer.entity.Checking
+import org.wycliffeassociates.resourcecontainer.entity.DublinCore
+import org.wycliffeassociates.resourcecontainer.entity.Language
+import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import java.io.File
 
 class RC(
@@ -91,6 +95,39 @@ class RC(
         ),
         "projects" to projectsAsDict
     )
+
+    fun toYAMLManifest(): Manifest {
+        val dc = DublinCore(
+            type = resource.type,
+            conformsTo = resource.conformsTo,
+            format = resource.format,
+            identifier = resource.identifier,
+            title = resource.title,
+            subject = resource.subject,
+            description = resource.description,
+            language = Language(
+                identifier = resource.language.identifier,
+                title = resource.language.title,
+                direction = resource.language.direction
+            ),
+            source = mutableListOf(),//resource.source, // TODO
+            rights = resource.rights,
+            creator = resource.creator,
+            contributor = resource.contributor.toMutableList(),
+            relation = resource.relation.toMutableList(),
+            publisher = resource.publisher,
+            issued = resource.issued,
+            modified = resource.modified,
+            version = resource.version
+        )
+        Manifest(
+            dublinCore = dc,
+            checking = Checking(),
+            projects = projectsAsDict
+        )
+
+        throw NotImplementedError()//  TODO
+    }
 
     val path: String
         get() = _dir?.trimEnd('/') ?: ""

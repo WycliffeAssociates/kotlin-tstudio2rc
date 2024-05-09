@@ -1,6 +1,6 @@
 package org.wycliffeassociates
 
-data class Language(private val rc: Any, private val language: Map<String, String>) {
+data class Language(private val language: Map<String, String>) {
 
     val identifier: String
         get() {

@@ -1,5 +1,6 @@
 package org.wycliffeassociates
 
+import org.wycliffeassociates.entity.SourceTranslation
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -21,7 +22,7 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
     val conformsTo: String
         get() = resource.getOrDefault("conformsto", "rc0.2") as? String ?: "rc0.2"
 
-    val format: String?
+    val format: String
         get() {
             val oldFormat = resource.getOrDefault("format", null) as? String
             return if (oldFormat != null && !oldFormat.contains("/")) {
@@ -30,7 +31,7 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
                 oldFormat ?: resource.getOrDefault("content_mime_type", null) as? String
                 ?: rc.manifest.getOrDefault("content_mime_type", null) as? String
                 ?: rc.manifest.getOrDefault("format", null) as? String
-                ?: if (rc.usfmFiles().isNotEmpty()) "text/usfm" else null
+                ?: if (rc.usfmFiles().isNotEmpty()) "text/usfm" else ""
             }
         }
 
@@ -58,13 +59,14 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
             }
         }
 
-    val identifier: String?
+    val identifier: String
         get() = resource.getOrDefault("identifier", null) as? String
             ?: resource.getOrDefault("id", null) as? String
             ?: (resource.getOrDefault("type", null) as? Map<String, Any?>)?.getOrDefault("id", null) as? String
             ?: resource.getOrDefault("slug", null) as? String
+            ?: ""
 
-    val title: String?
+    val title: String
         get() = resource.getOrDefault("title", null) as? String
             ?: resource.getOrDefault("name", null) as? String
             ?: identifier
@@ -105,12 +107,12 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
         get() {
             if (_language == null) {
                 _language = (resource.getOrDefault("language", null) as? Map<String, String>)
-                    ?.let { Language(rc, it) }
+                    ?.let { Language(it) }
                     ?: (resource.getOrDefault("target_language", null) as? Map<String, String>)
-                        ?.let { Language(rc, it) }
+                        ?.let { Language(it) }
                             ?: (rc.manifest.getOrDefault("target_language", null) as? Map<String, String>)
-                        ?.let { Language(rc, it) }
-                            ?: Language(rc, mapOf("identifier" to "en", "title" to "English", "direction" to "ltr"))
+                        ?.let { Language(it) }
+                            ?: Language(mapOf("identifier" to "en", "title" to "English", "direction" to "ltr"))
             }
             return _language!!
         }
@@ -136,39 +138,47 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
             return contributors
         }
 
-    val source: List<Map<String, String>>
+    val source: List<SourceTranslation>
         get() {
-            val sources = mutableListOf<Map<String, String>>()
-            resource.getOrDefault("source", null)
-                ?.let { sources.addAll(it as? List<Map<String, String>> ?: emptyList()) }
+            val sources = mutableListOf<SourceTranslation>()
+
+            // Check if "source" field exists in resource, add its value to sources if available
+            (resource["source"] as? List<Map<String, String>>)?.let { sourceList ->
+                sources.addAll(sourceList.map { map ->
+                    SourceTranslation(
+                        languageId = map["language_id"] ?: "",
+                        resourceId = map["resource_id"] ?: "",
+                        checkingLevel = map["checking_level"] ?: "",
+                        dateModified = map["date_modified"] ?: "",
+                        version = map["version"] ?: ""
+                    )
+                })
+            }
+
+            // If sources is still empty, check "source_translations" or "status.source_translations"
             if (sources.isEmpty()) {
-                val sourceTranslations = resource.getOrDefault("source_translations", null)
-                    ?: (resource.getOrDefault("status", null) as? Map<String, Any?>)
-                        ?.getOrDefault("source_translations", null)
-                sourceTranslations?.let {
-                    when (it) {
-                        is List<*> -> it.forEach { sourceTranslation ->
-                            val source = mutableMapOf<String, String>()
+                val sourceTranslations = resource["source_translations"] ?: (resource["status"] as? Map<String, Any?>)?.get("source_translations")
+                when (sourceTranslations) {
+                    is List<*> -> {
+                        sourceTranslations.forEach { sourceTranslation ->
                             (sourceTranslation as? Map<String, Any?>)?.let { st ->
-                                st.getOrDefault("resource_id", null)
-                                    ?.let { source["identifier"] = it as? String ?: "" }
-                                    ?: st.getOrDefault("resource_slug", null)
-                                        ?.let { source["identifier"] = it as? String ?: "" }
-                                st.getOrDefault("language_id", null)
-                                    ?.let { source["language"] = it as? String ?: "" }
-                                    ?: st.getOrDefault("language_slug", null)
-                                        ?.let { source["language"] = it as? String ?: "" }
-                                st.getOrDefault("version", null)
-                                    ?.let { source["version"] = it as? String ?: "" }
+                                sources.add(
+                                    SourceTranslation(
+                                        languageId = st["language_id"]?.toString() ?: "",
+                                        resourceId = st["resource_id"]?.toString() ?: "",
+                                        checkingLevel = st["checking_level"]?.toString() ?: "",
+                                        dateModified = st["date_modified"]?.toString() ?: "",
+                                        version = st["version"]?.toString() ?: ""
+                                    )
+                                )
                             }
-                            if (source.isNotEmpty()) sources.add(source)
                         }
-                        else -> Unit
                     }
                 }
             }
             return sources
         }
+
 
     val version: String
         get() = resource.getOrDefault("version", "1") as? String ?: "1"
