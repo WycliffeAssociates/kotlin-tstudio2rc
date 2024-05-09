@@ -1,5 +1,7 @@
 package org.wycliffeassociates
 
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 class Resource(private val rc: RC, resource: Map<String, Any?>) {
@@ -82,34 +84,15 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
     val issued: String
         get() {
             val issuedResult = resource.getOrDefault("issued", null)
-            return issuedResult as? String ?: ""
-//            return when (issuedResult) {
-//                is String -> issuedResult
-//                is Date -> issuedResult.formatDate()
-//                is DateTime -> issuedResult.formatDate()
-//                else -> (resource.getOrDefault("status", mapOf<String, Any?>()) as? Map<String, Any?>)
-//                    ?.getOrDefault("pub_date", null)
-//                    ?.let {
-//                        when (it) {
-//                            is String -> it
-//                            is Date -> it.formatDate()
-//                            is DateTime -> it.formatDate()
-//                            else -> DateTime.now().formatDate()
-//                        }
-//                    } ?: DateTime.now().formatDate()
-//            }
+            // TODO: parse timestamp if exists
+            return issuedResult as? String ?: LocalDate.now().toString()
         }
 
     val modified: String
         get() {
             val modifiedResult = resource.getOrDefault("modified", null)
-            return modifiedResult as? String ?: ""
-//            return when (modifiedResult) {
-//                is String -> modifiedResult
-//                is Date -> modifiedResult.formatDate()
-//                is DateTime -> modifiedResult.formatDate()
-//                else -> DateTime.now().formatDate()
-//            }
+            // TODO: parse modified timestamp if exists
+            return modifiedResult as? String ?: LocalDate.now().toString()
         }
 
     val rights: String

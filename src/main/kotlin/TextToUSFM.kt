@@ -49,15 +49,16 @@ object TextToUSFM {
             text = fixInorMarkers(text, verseRange)
         }
 
-        if (text != origText) {
-            val bakPath = File("$path.orig")
-            if (!bakPath.exists()) {
-                path.copyTo(bakPath)
-            }
-            val output = path.bufferedWriter()
-            output.write(text)
-            output.close()
-        }
+        // TODO: Should we delete this?
+//        if (text != origText) {
+//            val bakPath = File("$path.orig")
+//            if (!bakPath.exists()) {
+//                path.copyTo(bakPath)
+//            }
+//            val output = path.bufferedWriter()
+//            output.write(text)
+//            output.close()
+//        }
     }
 
     fun lacksChapter(text: String): Boolean {
