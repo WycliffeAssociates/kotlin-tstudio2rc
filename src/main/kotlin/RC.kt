@@ -141,8 +141,9 @@ class RC(
         }
 
 
-    val projectsAsDict: List<Map<String, Any?>>
-        get() = projects.map { it.asDict() }
+    val projectsAsDict: List<RCProject>
+        get() = projects.map { it.rcProject() }
+//        get() = projects.map { it.asDict() }
 
     fun project(identifier: String? = null): Project? {
         return identifier?.let { projects.find { it.identifier == identifier } }

@@ -148,41 +148,68 @@ object TextToUSFM {
         return newText
     }
 
-    val sub0Re = Regex("/v +[1-9]")
-    val sub0bRe = Regex("\\\\v +[1-9]")
-    val sub1Re = Regex("[^\\n ]\\\\v ")
-    val sub2Re = Regex("[\\n \\.,\"'?!]\\\\ *v[1-9]")
-    val sub2mRe = Regex("\\\\ *v[1-9]")
-    val sub3Re = Regex("\\\\v +[0-9\\-]+[^0-9\\-\\n ]")
-    val sub4Re = Regex("(\\\\v +[0-9\\-]+ +)\\\\v +[^1-9]")
-    val sub5Re = Regex("\\\\v( +\\\\v +[0-9\\-]+ +)")
-    val sub6Re = Regex("[\\n ]\\\\ v [1-9]")
-    val sub6mRe = Regex("\\\\ v [1-9]")
-    val sub7Re = Regex("[\\n ]v [1-9]")
-    val sub8Re = Regex("(.)([\\n ]*\\\\v [1-9]+) ?([\\.\\,:;]) ")
-    val sub9Re = Regex("(\\\\v [1-9]+) ?([\\.\\,:;]) ")
+    val sub0Re = Regex("/v +[1-9]")      // slash v
+    val sub0bRe = Regex("\\\\v +[1-9]")  // double backslash v
+    val sub1Re = Regex("[^\n ]\\\\v ")     // no space before \v
+    val sub2Re = Regex("[\n .,\"'?!]\\\\ *v[1-9]")   // no space before verse number, possible space between \ and v
+    val sub2mRe = Regex("\\\\ *v[1-9]")       // no space before verse number, possible space between \ and v -- match
+    val sub3Re = Regex("\\\\v +[0-9\\-]+[^0-9\\-\n ]")       // no space after verse number
+    val sub4Re = Regex("(\\\\v +[0-9\\-]+ +)\\\\v +[^1-9]")   // \v 10 \v The...
+    val sub5Re = Regex("\\\\v( +\\\\v +[0-9\\-]+ +)")         // \v \v 10
+    val sub6Re = Regex("[\n ]\\\\ v [1-9]")           // space between \ and v
+    val sub6mRe = Regex("\\\\ v [1-9]")               // space between \ and v -- match
+    val sub7Re = Regex("[\n ]v [1-9]")              // missing backslash
+    val sub8Re = Regex("(.)([\n ]*\\\\v [1-9]+) ?([.,:;]) ")   // Punctuation after verse marker
+    val sub9Re = Regex("(\\\\v [1-9]+) ?([.,:;]) ")
 
     fun fixVerseMarkers(text: String): String {
-        var newText = text
-        newText = newText.replace(sub0Re) { "/${it.groupValues[1]}" }
-        newText = newText.replace(sub0bRe) { "${it.groupValues[1]}" }
-        newText = newText.replace(sub1Re) { "${it.groupValues[0]}\n" }
-        if (sub2mRe.matchEntire(newText) != null) {
-            newText = "\\v ${newText.substring(1)}"
+        var result = text
+        sub0Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first + 1, it.range.first + 2, "\\")
         }
-        newText = newText.replace(sub2Re) { "${it.groupValues[0].substringBeforeLast("\\")} ${it.groupValues[1]}" }
-        newText = newText.replace(sub3Re) { "${it.groupValues[0].dropLast(1)} ${it.groupValues[1]}" }
-        newText = newText.replace(sub4Re) { "${it.groupValues[1]}${it.groupValues[2]}" }
-        newText = newText.replace(sub5Re) { "${it.groupValues[1]}" }
-        if (sub6mRe.matchEntire(newText) != null) {
-            newText = "\\v ${newText.substring(1)}"
+        sub0bRe.findAll(text).forEach {
+            result = result.removeRange(it.range.first + 1, it.range.first + 2)
         }
-        newText = newText.replace(sub6Re) { "\n\\v ${it.groupValues[1]}" }
-        newText = newText.replace(sub7Re) { "\n\\v ${it.groupValues[1]}" }
-        newText = newText.replace(sub8Re) { "${it.groupValues[1]}${it.groupValues[3]}" }
-        newText = newText.replace(sub9Re) { "${it.groupValues[1]}${it.groupValues[2]}" }
-        return newText
+        sub1Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first + 1, it.range.last - 1, "\n")
+        }
+        sub2mRe.find(text)?.let {
+            result = "\\v " + text.substring(it.range.last)
+        }
+        sub2Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first + 1, it.range.last - 1, "\n\\v ")
+        }
+        sub3Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.last - 1, it.range.last, " ")
+        }
+        sub4Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first, it.range.last, it.groupValues[1])
+        }
+        sub5Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first, it.range.last, it.groupValues[1])
+        }
+        sub6mRe.find(text)?.let {
+            result = "\\v " + text.substring(it.range.last)
+        }
+        sub6Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first, it.range.last, "\n\\v ")
+        }
+        sub7Re.findAll(text).forEach {
+            result = result.replaceRange(it.range.first, it.range.last, "\n\\v ")
+        }
+        sub8Re.findAll(text).forEach {
+            result = if (it.groupValues[3] != it.groupValues[1]) {
+                result.replaceRange(it.range.first + 1, it.range.last - 1, it.groupValues[3] + it.groupValues[2])
+            } else {
+                result.replaceRange(it.range.first + 1, it.range.last - 1, it.groupValues[2])
+            }
+        }
+        sub9Re.find(text)?.let {
+            result = it.groupValues[1] + text.substring(it.range.last)
+        }
+        return result
     }
+
 
     // Combine lines of text, eliminating unwanted line breaks, tabs, and extra whitespace.
 // Place most markers at the beginning of lines.
@@ -369,7 +396,7 @@ object TextToUSFM {
         }
         if (bookId.isEmpty()) {
             Regex("""${languageCode}_([a-zA-Z1-3][a-zA-Z][a-zA-Z])_""").find(File(folder).name)?.let {
-                bookId = it.groupValues[1].toUpperCase()
+                bookId = it.groupValues[1].lowercase()
             }
         }
         return bookId
@@ -379,15 +406,16 @@ object TextToUSFM {
 // Extracts the first line of that file as the book title.
     fun getBookTitle(): String {
         var bookTitle = ""
-        var path = File("front", "title.txt").absolutePath
-        if (!File(path).exists()) {
-            path = File("00", "title.txt").absolutePath
+        var f = File(sourceDir).resolve("front").resolve("title.txt")
+        if (!f.exists()) {
+//            f = File("00", "title.txt").absolutePath
         }
-        if (File(path).exists()) {
-            bookTitle = File(path).readLines().firstOrNull()?.trim() ?: ""
+        if (f.exists()) {
+            bookTitle = f.readLines().firstOrNull()?.trim() ?: ""
         } else {
-            println("$path doesn't exist.")
+            println("$f doesn't exist.")
         }
+
         return bookTitle
     }
 
@@ -400,15 +428,15 @@ object TextToUSFM {
         }
     }
 
-    fun listChapters(bookdir: File): List<String> {
-        val chapters = mutableListOf<String>()
-        bookdir.listFiles()?.forEach { directory ->
-            if (directory.isDirectory && isChapter(directory.name)) {
-                chapters.add(directory.name)
+    fun listChapters(bookdir: File): List<File> {
+        val chapters = mutableListOf<File>()
+        bookdir.listFiles()?.forEach {
+            if (it.isDirectory && isChapter(it.name)) {
+                chapters.add(it)
             }
         }
         if (chapters.size > 99) {
-            chapters.sortBy { it.toInt() }
+            chapters.sortBy { it.name.toInt() }
         }
         return chapters
     }
@@ -437,7 +465,7 @@ object TextToUSFM {
         val limit = if (i + 1 < chunks.size) {
             chunks[i + 1].toInt()
         } else {
-            usfmVerses[bookId]!!.verses[chapter - 1] + 1
+            usfmVerses[bookId.uppercase()]!!.verses[chapter - 1] + 1
         }
         var v = chunks[i].toInt() + 1
         while (v < limit) {
@@ -472,11 +500,11 @@ object TextToUSFM {
 
     // Appends information about the current book to the global projects list.
     fun appendToProjects(bookId: String, bookTitle: String) {
-        val testament = if (usfmVerses[bookId]!!.sort < 40) "nt" else "ot"
+        val testament = if (usfmVerses[bookId.uppercase()]!!.sort < 40) "nt" else "ot"
         val project = mapOf(
             "title" to bookTitle,
-            "id" to bookId.toLowerCase(),
-            "sort" to usfmVerses[bookId]?.sort,
+            "id" to bookId.lowercase(),
+            "sort" to usfmVerses[bookId.uppercase()]?.sort,
             "path" to "./${makeUsfmFilename(bookId)}",
             "category" to "[ 'bible-$testament' ]"
         )
@@ -510,7 +538,7 @@ object TextToUSFM {
 
     fun shortName(longPath: String): String {
         var shortName = longPath
-        if (sourceDir in longPath) {
+        if (sourceDir in longPath && sourceDir != longPath) {
             shortName = longPath.substring(sourceDir.length + 1)
         }
         return shortName
@@ -521,31 +549,34 @@ object TextToUSFM {
         usfmfile.appendText("\\h $bookTitle\n")
         usfmfile.appendText("\\toc1 $bookTitle\n")
         usfmfile.appendText("\\toc2 $bookTitle\n")
-        usfmfile.appendText("\\toc3 ${bookId.toLowerCase()}\n")
+        usfmfile.appendText("\\toc3 ${bookId.lowercase()}\n")
         usfmfile.appendText("\\mt $bookTitle\n\n")
     }
 
-    fun convertBook(folder: String, bookId: String, bookTitle: String) {
-        val chapters = listChapters(File(folder))
+    fun convertBook(path: String, bookId: String, bookTitle: String) {
+        val bookDir = File(path)
+        val chapters = listChapters(bookDir)
         val usfmPath = File(targetDir, makeUsfmFilename(bookId))
-        val titlesPath = usfmPath.absolutePath.replace(".usfm", "-chapters.txt")
         writeHeader(usfmPath, bookId, bookTitle)
-        val usfmFileWriter = usfmPath.bufferedWriter()
 
-        for (chap in chapters) {
-            val chapterTitle = getChapterTitle(folder, chap)
-            val chunks = listChunks(File(chap))
-            var i = 0
-            while (i < chunks.size) {
-                val filename = "${chunks[i]}.txt"
-                val txtPath = File(chap, filename).absolutePath
-                cleanupChunk(File(chap), filename, makeVerseRange(chunks, i, bookId, chap.toInt()))
-                val section = convertFile(txtPath, chapterTitle) + '\n'
-                usfmFileWriter.write(section)
-                i++
+        usfmPath.bufferedWriter().use { usfmWriter ->
+            for (chap in chapters) {
+                val chapterTitle = getChapterTitle(path, chap.name)
+                val chunks = listChunks(chap)
+                var i = 0
+                while (i < chunks.size) {
+                    val filename = "${chunks[i]}.txt"
+                    val txtPath = File(chap, filename).absolutePath
+                    cleanupChunk(chap, filename, makeVerseRange(chunks, i, bookId, chap.name.toInt()))
+                    val section = convertFile(txtPath, chapterTitle) + '\n'
+                    usfmWriter.write(section)
+                    i++
+                }
             }
+
         }
-        usfmFileWriter.close()
+
+        //        val titlesPath = usfmPath.absolutePath.replace(".usfm", "-chapters.txt")
         // dumpChapterTitles(titles, titlesPath)
     }
 
@@ -554,8 +585,7 @@ object TextToUSFM {
         try {
             File(currentFolder).walk().forEach { file ->
                 if (file.isDirectory && isBookFolder(file.absolutePath)) {
-                    System.out.write("Converting: ${shortName(file.absolutePath)}\n".toByteArray())
-                    System.out.flush()
+                    println("Converting: ${file.absolutePath}\n")
                     val bookId = getBookId(file.absolutePath)
                     val bookTitle = getBookTitle()
                     if (bookId.isNotEmpty() && bookTitle.isNotEmpty()) {
@@ -572,14 +602,15 @@ object TextToUSFM {
                 }
             }
         } catch (e: Exception) {
-            println("error converting folder $folder")
+            throw e
         }
     }
 
     fun makeUsfmFilename(bookId: String): String {
+        val bookSlug = bookId.uppercase()
         return if (usfmVerses.isNotEmpty()) {
-            val num = usfmVerses[bookId]?.usfmNumber ?: ""
-            "$num-$bookId.usfm"
+            val num = usfmVerses[bookSlug]?.usfmNumber ?: ""
+            "$num-$bookSlug.usfm"
         } else {
             val pathComponents = File("").absolutePath.split(File.separator)
             "${pathComponents.last()}.usfm"

@@ -89,6 +89,17 @@ class Project(private val rc: RC, project: Map<String, Any?>? = null) {
         "versification" to versification
     )
 
+    fun rcProject(): RCProject {
+        return RCProject(
+            identifier = identifier,
+            categories = categories,
+            path = path,
+            sort = sort.toInt(),
+            title = title,
+            versification = versification
+        )
+    }
+
     companion object {
         fun readFile(filePath: String): String {
             // Implement file reading logic here

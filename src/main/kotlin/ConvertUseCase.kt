@@ -16,7 +16,7 @@ class TstudioToRC {
 
     // source: txt2USFM-RC.py
     private fun makeUsfmFilename(bookSlug: String): String {
-        val bookId = bookSlug.toUpperCase()
+        val bookId = bookSlug.uppercase()
 
         val num = verseCounts[bookId]?.usfmNumber ?: ""
         return if (num.isNotEmpty()) {
