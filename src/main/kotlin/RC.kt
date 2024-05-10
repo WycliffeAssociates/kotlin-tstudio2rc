@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.entity.ProjectManifest
-import org.wycliffeassociates.entity.mapToLanguageEntity
+import org.wycliffeassociates.entity.TargetLanguage
 import org.wycliffeassociates.resourcecontainer.entity.Checking
 import org.wycliffeassociates.resourcecontainer.entity.DublinCore
+import org.wycliffeassociates.resourcecontainer.entity.Language
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import org.wycliffeassociates.resourcecontainer.entity.Source
 import java.io.File
@@ -32,7 +33,7 @@ class RC(
 
     val metadata: ProjectManifest = parseManifestFile()
 
-    val rawManifest: Map<String, Any?>
+    private val rawManifest: Map<String, Any?>
         get() = _manifest ?: getManifestFromDir()
 
     private fun parseManifestFile(): ProjectManifest {
@@ -105,19 +106,6 @@ class RC(
             modified = LocalDate.now().toString(),
             version = "1"
         )
-
-    val checkingEntity: List<String>
-        get() = rawManifest["checking"]
-            ?.let { it as Map<String, List<String>> }
-            ?.get("checking_entity")
-            ?: mutableListOf("Wycliffe Associates")
-
-    val checkingLevel: String
-        get() = rawManifest["checking"]
-            ?.let { it as Map<String, List<String>> }
-            ?.getOrDefault("checking_level", "1")
-            ?.toString()
-            ?: "1"
 
     private val projects: List<Project>
         get() {
@@ -227,8 +215,17 @@ class RC(
     fun toYAMLManifest(): Manifest {
         return Manifest(
             dublinCore = dublinCore,
-            checking = Checking(checkingEntity, checkingLevel),
+            checking = Checking(
+                checkingEntity = listOf("Wycliffe Associates"),
+                checkingLevel = "1"
+            ),
             projects = listOf(rcProject)
         )
     }
 }
+
+fun mapToLanguageEntity(targetLanguage: TargetLanguage) = Language(
+    identifier = targetLanguage.id,
+    title = targetLanguage.name,
+    direction = targetLanguage.direction
+)
