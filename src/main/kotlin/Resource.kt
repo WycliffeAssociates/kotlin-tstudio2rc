@@ -6,8 +6,6 @@ import java.time.LocalDate
 
 class Resource(private val rc: RC, private val resource: Map<String, Any?>) {
 
-    private var _language: Language? = null
-
     val conformsTo: String
         get() = resource.getOrDefault("conformsto", "rc0.2") as? String ?: "rc0.2"
 
@@ -90,13 +88,6 @@ class Resource(private val rc: RC, private val resource: Map<String, Any?>) {
 
     val creator: String
         get() = resource.getOrDefault("creator", "Unknown Creator") as? String ?: "Unknown Creator"
-
-    val language: Language
-        get() = Language(
-            rc.metadata.targetLanguage.id,
-            rc.metadata.targetLanguage.name,
-            rc.metadata.targetLanguage.direction
-        )
 
     val contributor: List<String>
         get() {

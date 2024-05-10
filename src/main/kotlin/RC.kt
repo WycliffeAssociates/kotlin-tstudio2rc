@@ -5,20 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.entity.ProjectManifest
+import org.wycliffeassociates.entity.mapToLanguageEntity
 import org.wycliffeassociates.resourcecontainer.entity.Checking
 import org.wycliffeassociates.resourcecontainer.entity.DublinCore
-import org.wycliffeassociates.resourcecontainer.entity.Language
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
+import org.wycliffeassociates.resourcecontainer.entity.Source
 import java.io.File
+import java.time.LocalDate
 
 class RC(
     directory: String? = null,
     repoName: String? = null,
     manifest: Map<String, Any?>? = null
 ) {
-    companion object {
-        const val currentVersion = "0.2"
-    }
 
     private var _dir: String? = directory
     private var loadedManifestFile = false
@@ -92,6 +91,29 @@ class RC(
             _resource = Resource(this, resource as? Map<String, Any?> ?: mapOf())
             _resource!!
         }
+
+    private val sources = metadata.sourceTranslations.map { Source(it.resourceId, it.languageId, it.version) }.toMutableList()
+
+    private val dublinCore: DublinCore
+        get() = DublinCore(
+            type = "book",
+            conformsTo = "rc0.2",
+            format = "text/${metadata.format}",
+            identifier = metadata.resource.id,
+            title = metadata.resource.name,
+            subject = "Bible",
+            description = "",
+            language = mapToLanguageEntity(metadata.targetLanguage),
+            source = sources,
+            rights = "CC BY-SA 4.0",
+            creator = "Unknown Creator",
+            contributor = metadata.translators.toMutableList(),
+            relation = mutableListOf(),
+            publisher = "Door43",
+            issued = LocalDate.now().toString(),
+            modified = LocalDate.now().toString(),
+            version = "1"
+        )
 
     val checkingEntity: List<String>
         get() = rawManifest["checking"]
@@ -212,31 +234,8 @@ class RC(
 //    }
 
     fun toYAMLManifest(): Manifest {
-        val dc = DublinCore(
-            type = resource.type,
-            conformsTo = resource.conformsTo,
-            format = resource.format,
-            identifier = resource.identifier,
-            title = resource.title,
-            subject = resource.subject,
-            description = resource.description,
-            language = Language(
-                identifier = resource.language.identifier,
-                title = resource.language.title,
-                direction = resource.language.direction
-            ),
-            source =  resource.source.toMutableList(),
-            rights = resource.rights,
-            creator = resource.creator,
-            contributor = resource.contributor.toMutableList(),
-            relation = resource.relation.toMutableList(),
-            publisher = resource.publisher,
-            issued = resource.issued,
-            modified = resource.modified,
-            version = resource.version
-        )
         return Manifest(
-            dublinCore = dc,
+            dublinCore = dublinCore,
             checking = Checking(checkingEntity, checkingLevel),
             projects = listOf(rcProject)
         )

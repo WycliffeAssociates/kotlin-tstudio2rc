@@ -2,6 +2,7 @@ package org.wycliffeassociates.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.wycliffeassociates.resourcecontainer.entity.Language
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 data class ProjectManifest(
@@ -57,4 +58,10 @@ data class SourceTranslation(
     @JsonProperty("date_modified")
     val dateModified: String,
     val version: String
+)
+
+fun mapToLanguageEntity(targetLanguage: TargetLanguage) = Language(
+    identifier = targetLanguage.id,
+    title = targetLanguage.name,
+    direction = targetLanguage.direction
 )
