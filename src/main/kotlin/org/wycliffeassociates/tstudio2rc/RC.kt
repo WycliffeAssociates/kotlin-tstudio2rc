@@ -212,7 +212,7 @@ class RC(
 //        return project.tocYaml
 //    }
 
-    fun toYAMLManifest(): Manifest {
+    fun rcManifest(): Manifest {
         return Manifest(
             dublinCore = dublinCore,
             checking = Checking(

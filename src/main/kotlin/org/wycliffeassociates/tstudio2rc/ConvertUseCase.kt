@@ -34,8 +34,9 @@ class TstudioToRC {
     // constructs the manifest based on the manifest.json in project directory
     private fun buildManifest(dir: String): Manifest {
         val rc = RC(directory = dir)
-        val manifest = rc.toYAMLManifest()
+        val manifest = rc.rcManifest()
         manifest.dublinCore.creator = "BTT-Writer"
+
         val projectSlug = rc.project()!!.identifier
         val projectPath = "./${makeUsfmFilename(projectSlug)}"
         val anthology = if ((verseCounts[projectSlug.uppercase()]?.sort ?: 0) < 40) "ot" else "nt"
@@ -76,6 +77,7 @@ class TstudioToRC {
         var rootDir: String? = null
 
         File(dir).walkTopDown().forEach { file ->
+            // remove .git folder
             if (file.isDirectory && file.name == ".git") {
                 file.deleteRecursively()
             }
@@ -91,19 +93,7 @@ class TstudioToRC {
         return rootDir
     }
 
-    fun clearDirectory(directoryPath: String) {
-        val directory = File(directoryPath)
-        if (directory.exists() && directory.isDirectory) {
-            directory.listFiles()?.forEach { file ->
-                if (file.isDirectory) {
-                    clearDirectory(file.absolutePath)
-                }
-                file.delete()
-            }
-        }
-    }
-
-    fun convert(inputFile: File, outputDir: String) {
+    fun convertToOratureFile(inputFile: File, outputDir: String): File {
         val tempDir = Files.createTempDirectory("tempDir").toFile()
 
         val fileNameNoExt = inputFile.nameWithoutExtension
@@ -130,30 +120,31 @@ class TstudioToRC {
         val oratureFile = File(outputFilePath.parent, outputFileName)
 
         File("$zipFileName.zip").renameTo(oratureFile)
+        tempDir.deleteRecursively()
+
+        return oratureFile
     }
 
-    fun convertDir(inputDir: String, outputDir: String) {
-        val rcConvertDir = File(outputDir, File(inputDir).name)
-        val outputFilePath = File(outputDir, "RC")
-        rcConvertDir.mkdirs()
+    fun convertDir(inputDir: File, outputDir: File): File {
+        val outputRc = outputDir.resolve("${inputDir.name}.zip")
 
-        TextToUSFM.sourceDir = inputDir
-        TextToUSFM.targetDir = rcConvertDir.absolutePath
-        TextToUSFM.convertFolder(inputDir)
+        val tempConvertDir = outputDir.resolve(inputDir.name)
+        tempConvertDir.mkdirs()
+
+        TextToUSFM.sourceDir = inputDir.invariantSeparatorsPath
+        TextToUSFM.targetDir = tempConvertDir.invariantSeparatorsPath
+        TextToUSFM.convertFolder(inputDir.invariantSeparatorsPath)
 
         // manifest.yaml
-        val manifest = buildManifest(inputDir)
-        val manifestFile = rcConvertDir.resolve("manifest.yaml")
+        val manifest = buildManifest(inputDir.invariantSeparatorsPath)
+        val manifestFile = tempConvertDir.resolve("manifest.yaml")
         val mapper = ObjectMapper(YAMLFactory())
             .registerKotlinModule()
         mapper.writeValue(manifestFile, manifest)
 
-        val zipFileName = outputFilePath.absolutePath
-        zipDirectory(rcConvertDir, File("$zipFileName.zip"))
+        zipDirectory(tempConvertDir, outputRc)
+        tempConvertDir.deleteRecursively()
 
-        val outputFileName = "${File(inputDir).name}.orature"
-        val oratureFile = File(outputFilePath.parent, outputFileName)
-
-        File("$zipFileName.zip").renameTo(oratureFile)
+        return outputRc
     }
 }
