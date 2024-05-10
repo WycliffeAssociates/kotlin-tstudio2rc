@@ -134,13 +134,11 @@ class RC(
             modified = resource.modified,
             version = resource.version
         )
-        Manifest(
+        return Manifest(
             dublinCore = dc,
             checking = Checking(),
             projects = projectsAsDict
         )
-
-        throw NotImplementedError()//  TODO
     }
 
     val path: String
@@ -152,7 +150,6 @@ class RC(
     val resource: Resource
         get() = _resource ?: let {
             val resource = rawManifest.getOrDefault("dublin_core", null)
-                ?: rawManifest.getOrDefault("resource", null)
                 ?: rawManifest
             _resource = Resource(this, resource as? Map<String, Any?> ?: mapOf())
             _resource!!

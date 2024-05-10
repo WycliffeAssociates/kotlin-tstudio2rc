@@ -147,7 +147,7 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
 
             // If sources is still empty, check "source_translations" or "status.source_translations"
             if (sources.isEmpty()) {
-                val sourceTranslations = resource["source_translations"] ?: (resource["status"] as? Map<String, Any?>)?.get("source_translations")
+                val sourceTranslations = resource["source_translations"]
                 when (sourceTranslations) {
                     is List<*> -> {
                         sourceTranslations.forEach { sourceTranslation ->
