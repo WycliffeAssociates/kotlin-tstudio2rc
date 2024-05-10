@@ -65,7 +65,7 @@ class Project(private val rc: RC, project: Map<String, Any?>? = null) {
         get() = project.getOrDefault("versification", "kjv").toString()
 
     val categories: List<String>
-        get() = project.getOrDefault("categories", emptyList<String>()).toString().split(",")
+        get() = project.getOrDefault("categories", listOf<String>()) as List<String>
 
     // TODO
 //    fun toc(): String = rc.toc(identifier)

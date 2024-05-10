@@ -1,6 +1,7 @@
 package org.wycliffeassociates
 
 import org.wycliffeassociates.entity.SourceTranslation
+import org.wycliffeassociates.resourcecontainer.entity.Source
 import java.time.LocalDate
 
 class Resource(private val rc: RC, resource: Map<String, Any?>) {
@@ -128,7 +129,7 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
             return contributors
         }
 
-    val source: List<SourceTranslation>
+    val source: List<Source>
         get() {
             val sources = mutableListOf<SourceTranslation>()
 
@@ -166,7 +167,7 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
                     }
                 }
             }
-            return sources
+            return sources.map { Source(it.resourceId, it.languageId, it.version)}
         }
 
 

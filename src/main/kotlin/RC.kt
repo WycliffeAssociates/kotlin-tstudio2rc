@@ -124,7 +124,7 @@ class RC(
                 title = resource.language.title,
                 direction = resource.language.direction
             ),
-            source = mutableListOf(),//resource.source, // TODO
+            source =  resource.source.toMutableList(),
             rights = resource.rights,
             creator = resource.creator,
             contributor = resource.contributor.toMutableList(),
@@ -136,7 +136,7 @@ class RC(
         )
         return Manifest(
             dublinCore = dc,
-            checking = Checking(),
+            checking = Checking(checkingEntity, checkingLevel),
             projects = projectsAsDict
         )
     }
@@ -157,14 +157,15 @@ class RC(
 
     val checkingEntity: List<String>
         get() = rawManifest["checking"]
-//            .getOrDefault("checking_entity", listOf("Wycliffe Associates"))
-                as? List<String>
-            ?: listOf("Wycliffe Associates")
+            ?.let { it as Map<String, List<String>> }
+            ?.get("checking_entity")
+            ?: mutableListOf("Wycliffe Associates")
 
     val checkingLevel: String
-        get() = rawManifest.getOrDefault("checking", null)
-//            .getOrDefault("checking_level", "1")
-                as? String
+        get() = rawManifest["checking"]
+            ?.let { it as Map<String, List<String>> }
+            ?.getOrDefault("checking_level", "1")
+            ?.toString()
             ?: "1"
 
     val projects: List<Project>
