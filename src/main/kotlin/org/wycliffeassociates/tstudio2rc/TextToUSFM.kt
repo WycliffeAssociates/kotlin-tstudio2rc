@@ -5,10 +5,13 @@ import org.wycliffeassociates.tstudio2rc.getVersification
 import org.wycliffeassociates.tstudio2rc.loadJsonObject
 import java.io.File
 
+/**
+ * Ported from https://github.com/unfoldingWord-dev/tools/blob/develop/usfm/txt2USFM.py
+ */
 object TextToUSFM {
 
-    var sourceDir = "C:\\DCS\\Shubi\\REG"
-    var targetDir = "C:\\DCS\\Shubi\\work"
+    var sourceDir = "/path/to/input/tstudio"
+    var targetDir = "/output/dir"
     var languageCode = ""
     val markChunks = false
 
