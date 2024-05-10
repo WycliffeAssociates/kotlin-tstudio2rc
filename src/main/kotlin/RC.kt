@@ -1,5 +1,10 @@
 package org.wycliffeassociates
 
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.wycliffeassociates.entity.ProjectManifest
 import org.wycliffeassociates.resourcecontainer.entity.Checking
 import org.wycliffeassociates.resourcecontainer.entity.DublinCore
 import org.wycliffeassociates.resourcecontainer.entity.Language
@@ -27,8 +32,17 @@ class RC(
         _dir?.let { assert(File(it).isDirectory) }
     }
 
-    val manifest: Map<String, Any?>
+    val metadata: ProjectManifest = parseManifestFile()
+
+    val rawManifest: Map<String, Any?>
         get() = _manifest ?: getManifestFromDir()
+
+    private fun parseManifestFile(): ProjectManifest {
+        val file = File("$path/manifest.json")
+        val mapper = ObjectMapper(JsonFactory()).registerKotlinModule()
+        val metadata: ProjectManifest = mapper.readValue(file)
+        return metadata
+    }
 
     private fun getManifestFromDir(): Map<String, Any?> {
         loadedManifestFile = false
@@ -137,21 +151,21 @@ class RC(
 
     val resource: Resource
         get() = _resource ?: let {
-            val resource = manifest.getOrDefault("dublin_core", null)
-                ?: manifest.getOrDefault("resource", null)
-                ?: manifest
+            val resource = rawManifest.getOrDefault("dublin_core", null)
+                ?: rawManifest.getOrDefault("resource", null)
+                ?: rawManifest
             _resource = Resource(this, resource as? Map<String, Any?> ?: mapOf())
             _resource!!
         }
 
     val checkingEntity: List<String>
-        get() = manifest["checking"]
+        get() = rawManifest["checking"]
 //            .getOrDefault("checking_entity", listOf("Wycliffe Associates"))
                 as? List<String>
             ?: listOf("Wycliffe Associates")
 
     val checkingLevel: String
-        get() = manifest.getOrDefault("checking", null)
+        get() = rawManifest.getOrDefault("checking", null)
 //            .getOrDefault("checking_level", "1")
                 as? String
             ?: "1"
@@ -159,14 +173,14 @@ class RC(
     val projects: List<Project>
         get() {
             if (_projects.isEmpty()) {
-                if ("projects" in manifest && manifest["projects"] is List<*>) {
-                    val projectList = manifest["projects"] as List<*>
+                if ("projects" in rawManifest && rawManifest["projects"] is List<*>) {
+                    val projectList = rawManifest["projects"] as List<*>
                     for (p in projectList) {
                         val project = Project(this, p as Map<String, Any>)
                         _projects.add(project)
                     }
-                } else if ("project" in manifest && manifest["project"] is Map<*, *>) {
-                    val projectMap = manifest["project"] as Map<*, *>
+                } else if ("project" in rawManifest && rawManifest["project"] is Map<*, *>) {
+                    val projectMap = rawManifest["project"] as Map<*, *>
                     val project = Project(this, projectMap as Map<String, Any>)
                     _projects.add(project)
                 }
@@ -196,14 +210,12 @@ class RC(
 
     fun chapters(identifier: String? = null): List<String> {
         val project = project(identifier) ?: return emptyList()
-        return path?.let { path ->
-            File("$path/${project.path}")
+        return File("$path/${project.path}")
                 .listFiles { file -> file.isDirectory && !file.name.startsWith(".") }
                 ?.map { it.name }
                 ?.filter { chunks(identifier, it).isNotEmpty() }
                 ?.sorted()
                 ?: emptyList()
-        } ?: emptyList()
     }
 
     fun chunks(projectIdentifier: String?, chapterIdentifier: String? = null): List<String> {

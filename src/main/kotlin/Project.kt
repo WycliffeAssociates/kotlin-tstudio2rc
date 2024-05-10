@@ -27,8 +27,7 @@ class Project(private val rc: RC, project: Map<String, Any?>? = null) {
                         project.getOrDefault("project_id", "")
                             .toString()
                             .lowercase()
-                            .ifEmpty { rc.resource.identifier }
-                            ?: ""
+                            .ifEmpty { rc.metadata.resource.id }
                     }
             }
 

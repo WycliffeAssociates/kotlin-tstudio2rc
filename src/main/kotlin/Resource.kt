@@ -2,8 +2,6 @@ package org.wycliffeassociates
 
 import org.wycliffeassociates.entity.SourceTranslation
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
 
 class Resource(private val rc: RC, resource: Map<String, Any?>) {
 
@@ -29,9 +27,8 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
                 "text/${oldFormat.lowercase()}"
             } else {
                 oldFormat ?: resource.getOrDefault("content_mime_type", null) as? String
-                ?: rc.manifest.getOrDefault("content_mime_type", null) as? String
-                ?: rc.manifest.getOrDefault("format", null) as? String
-                ?: if (rc.usfmFiles().isNotEmpty()) "text/usfm" else ""
+                ?: rc.rawManifest.getOrDefault("content_mime_type", null) as? String
+                ?: rc.metadata.format
             }
         }
 
@@ -104,18 +101,11 @@ class Resource(private val rc: RC, resource: Map<String, Any?>) {
         get() = resource.getOrDefault("creator", "Unknown Creator") as? String ?: "Unknown Creator"
 
     val language: Language
-        get() {
-            if (_language == null) {
-                _language = (resource.getOrDefault("language", null) as? Map<String, String>)
-                    ?.let { Language(it) }
-                    ?: (resource.getOrDefault("target_language", null) as? Map<String, String>)
-                        ?.let { Language(it) }
-                            ?: (rc.manifest.getOrDefault("target_language", null) as? Map<String, String>)
-                        ?.let { Language(it) }
-                            ?: Language(mapOf("identifier" to "en", "title" to "English", "direction" to "ltr"))
-            }
-            return _language!!
-        }
+        get() = Language(
+            rc.metadata.targetLanguage.id,
+            rc.metadata.targetLanguage.name,
+            rc.metadata.targetLanguage.direction
+        )
 
     val contributor: List<String>
         get() {
