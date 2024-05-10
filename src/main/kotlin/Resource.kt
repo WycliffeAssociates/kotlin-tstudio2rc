@@ -4,19 +4,9 @@ import org.wycliffeassociates.entity.SourceTranslation
 import org.wycliffeassociates.resourcecontainer.entity.Source
 import java.time.LocalDate
 
-class Resource(private val rc: RC, resource: Map<String, Any?>) {
+class Resource(private val rc: RC, private val resource: Map<String, Any?>) {
 
-    private val resource: Map<String, Any?>
     private var _language: Language? = null
-
-    init {
-        require(rc is RC) { "Invalid RC instance" }
-        this.resource = resource
-        if (resource !is Map<*, *>) {
-            throw Exception("Missing dict parameter: resource")
-        }
-        _language = null
-    }
 
     val conformsTo: String
         get() = resource.getOrDefault("conformsto", "rc0.2") as? String ?: "rc0.2"

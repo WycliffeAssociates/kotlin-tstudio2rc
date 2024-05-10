@@ -3,6 +3,7 @@ package org.wycliffeassociates
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -28,15 +29,15 @@ class TstudioToRC {
     }
 
     // constructs the manifest based on the manifest.json in project directory
-    private fun buildManifest(dir: String): Map<String, Any?> {
+    private fun buildManifest(dir: String): Manifest {
         val rc = RC(directory = dir)
-        var manifest = rc.asDict()
-        manifest["dublin_core"].let { it as MutableMap<String, String> }["creator"] = "BTT-Writer"
+        val manifest = rc.toYAMLManifest()
+        manifest.dublinCore.creator = "BTT-Writer"
         val projectSlug = rc.project()!!.identifier
         val projectPath = "./${makeUsfmFilename(projectSlug)}"
         val anthology = if ((verseCounts[projectSlug.uppercase()]?.sort ?: 0) < 40) "ot" else "nt"
 
-        manifest["projects"].let { it as List<RCProject> }.forEach { p ->
+        manifest.projects.forEach { p ->
             if (p.identifier == projectSlug) {
                 p.path = projectPath
                 p.sort = verseCounts[projectSlug.uppercase()]?.sort ?: 0

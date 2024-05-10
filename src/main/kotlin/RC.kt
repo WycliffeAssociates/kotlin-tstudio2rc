@@ -79,68 +79,6 @@ class RC(
         }
     }
 
-    fun asDict(): Map<String, Any?> = mapOf(
-        "dublin_core" to mapOf(
-            "type" to resource.type,
-            "conformsto" to resource.conformsTo,
-            "format" to resource.format,
-            "identifier" to resource.identifier,
-            "title" to resource.title,
-            "subject" to resource.subject,
-            "description" to resource.description,
-            "language" to mapOf(
-                "identifier" to resource.language.identifier,
-                "title" to resource.language.title,
-                "direction" to resource.language.direction
-            ),
-            "source" to resource.source,
-            "rights" to resource.rights,
-            "creator" to resource.creator,
-            "contributor" to resource.contributor,
-            "relation" to resource.relation,
-            "publisher" to resource.publisher,
-            "issued" to resource.issued,
-            "modified" to resource.modified,
-            "version" to resource.version
-        ),
-        "checking" to mapOf(
-            "checking_entity" to checkingEntity,
-            "checking_level" to checkingLevel
-        ),
-        "projects" to projectsAsDict
-    )
-
-    fun toYAMLManifest(): Manifest {
-        val dc = DublinCore(
-            type = resource.type,
-            conformsTo = resource.conformsTo,
-            format = resource.format,
-            identifier = resource.identifier,
-            title = resource.title,
-            subject = resource.subject,
-            description = resource.description,
-            language = Language(
-                identifier = resource.language.identifier,
-                title = resource.language.title,
-                direction = resource.language.direction
-            ),
-            source =  resource.source.toMutableList(),
-            rights = resource.rights,
-            creator = resource.creator,
-            contributor = resource.contributor.toMutableList(),
-            relation = resource.relation.toMutableList(),
-            publisher = resource.publisher,
-            issued = resource.issued,
-            modified = resource.modified,
-            version = resource.version
-        )
-        return Manifest(
-            dublinCore = dc,
-            checking = Checking(checkingEntity, checkingLevel),
-            projects = projectsAsDict
-        )
-    }
-
     val path: String
         get() = _dir?.trimEnd('/') ?: ""
 
@@ -168,7 +106,7 @@ class RC(
             ?.toString()
             ?: "1"
 
-    val projects: List<Project>
+    private val projects: List<Project>
         get() {
             if (_projects.isEmpty()) {
                 if ("projects" in rawManifest && rawManifest["projects"] is List<*>) {
@@ -189,22 +127,24 @@ class RC(
             return _projects
         }
 
-
-    val projectsAsDict: List<RCProject>
-        get() = projects.map { it.rcProject() }
-//        get() = projects.map { it.asDict() }
+    val rcProject: RCProject
+        get() {
+            val projectPath = if (File("${path}/content").isDirectory) "./content" else "./"
+            return RCProject(
+                identifier = metadata.project.id,
+                title = metadata.project.name,
+                sort = 1,
+                path = projectPath,
+                versification = "kjv",
+                categories = listOf()
+            )
+        }
 
     fun project(identifier: String? = null): Project? {
         return identifier?.let { projects.find { it.identifier == identifier } }
             ?: projects.singleOrNull()
             ?: if (projects.isEmpty()) Project(this) else null
     }
-
-    val projectCount: Int
-        get() = projects.size
-
-    val projectIds: List<String>
-        get() = projects.map { it.identifier }
 
     fun chapters(identifier: String? = null): List<String> {
         val project = project(identifier) ?: return emptyList()
@@ -220,17 +160,15 @@ class RC(
         val projectId = projectIdentifier ?: return emptyList()
         val chapterId = chapterIdentifier ?: projectId
         val project = project(projectId) ?: return emptyList()
-        return path?.let { path ->
-            File("$path/${project.path}/$chapterId")
-                .listFiles { file ->
-                    file.isFile &&
-                            !file.name.startsWith(".") &&
-                            file.extension in listOf("", "txt", "text", "md", "usfm")
-                }
-                ?.map { it.name }
-                ?.sorted()
-                ?: emptyList()
-        } ?: emptyList()
+        return File("$path/${project.path}/$chapterId")
+            .listFiles { file ->
+                file.isFile &&
+                        !file.name.startsWith(".") &&
+                        file.extension in listOf("", "txt", "text", "md", "usfm")
+            }
+            ?.map { it.name }
+            ?.sorted()
+            ?: listOf()
     }
 
     fun usfmFiles(identifier: String? = null): List<String> {
@@ -272,4 +210,35 @@ class RC(
 //        }
 //        return project.tocYaml
 //    }
+
+    fun toYAMLManifest(): Manifest {
+        val dc = DublinCore(
+            type = resource.type,
+            conformsTo = resource.conformsTo,
+            format = resource.format,
+            identifier = resource.identifier,
+            title = resource.title,
+            subject = resource.subject,
+            description = resource.description,
+            language = Language(
+                identifier = resource.language.identifier,
+                title = resource.language.title,
+                direction = resource.language.direction
+            ),
+            source =  resource.source.toMutableList(),
+            rights = resource.rights,
+            creator = resource.creator,
+            contributor = resource.contributor.toMutableList(),
+            relation = resource.relation.toMutableList(),
+            publisher = resource.publisher,
+            issued = resource.issued,
+            modified = resource.modified,
+            version = resource.version
+        )
+        return Manifest(
+            dublinCore = dc,
+            checking = Checking(checkingEntity, checkingLevel),
+            projects = listOf(rcProject)
+        )
+    }
 }

@@ -4,16 +4,7 @@ import java.io.File
 
 class Project(private val rc: RC, project: Map<String, Any?>? = null) {
 
-    private val project: MutableMap<String, Any?>
-
-    init {
-        this.project = project?.toMutableMap() ?: mutableMapOf()
-        if (rc !is RC) {
-            throw Exception("Missing RC parameter: rc")
-        }
-//        configYaml = null
-//        tocYaml = null
-    }
+    private val project: MutableMap<String, Any?> = project?.toMutableMap() ?: mutableMapOf()
 
     val identifier: String
         get() = project.getOrDefault("identifier", "")
@@ -53,9 +44,9 @@ class Project(private val rc: RC, project: Map<String, Any?>? = null) {
         get() = project.getOrDefault("path", "")
             .toString()
             .ifEmpty {
-                rc.path?.let {
+                rc.path.let {
                     if (File("${it}/content").isDirectory) "./content" else "./"
-                } ?: "./"
+                }
             }
 
     val sort: String
@@ -72,21 +63,6 @@ class Project(private val rc: RC, project: Map<String, Any?>? = null) {
 
     // TODO
 //    fun config(): String = rc.config(identifier)
-
-    fun chapters(): List<String> = rc.chapters(identifier)
-
-    fun chunks(chapterIdentifier: String? = null): List<String> = rc.chunks(identifier, chapterIdentifier)
-
-    fun usfmFiles(): List<String> = rc.usfmFiles(identifier)
-
-    fun asDict(): Map<String, Any?> = mapOf(
-        "categories" to categories,
-        "identifier" to identifier,
-        "path" to path,
-        "sort" to sort,
-        "title" to title,
-        "versification" to versification
-    )
 
     fun rcProject(): RCProject {
         return RCProject(
