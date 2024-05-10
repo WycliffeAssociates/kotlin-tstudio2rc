@@ -1,5 +1,8 @@
-package org.wycliffeassociates
+package org.wycliffeassociates.org.wycliffeassociates.tstudio2rc
 
+import org.wycliffeassociates.tstudio2rc.RCProject
+import org.wycliffeassociates.tstudio2rc.getVersification
+import org.wycliffeassociates.tstudio2rc.loadJsonObject
 import java.io.File
 
 object TextToUSFM {

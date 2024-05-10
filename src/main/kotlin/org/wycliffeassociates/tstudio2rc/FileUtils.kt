@@ -1,10 +1,11 @@
-package org.wycliffeassociates
+package org.wycliffeassociates.tstudio2rc
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.wycliffeassociates.tstudio2rc.serializable.BookVersification
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream

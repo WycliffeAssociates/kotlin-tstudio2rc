@@ -1,4 +1,4 @@
-package org.wycliffeassociates.entity
+package org.wycliffeassociates.tstudio2rc.serializable
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

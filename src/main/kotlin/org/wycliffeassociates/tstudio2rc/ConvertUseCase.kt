@@ -1,9 +1,12 @@
-package org.wycliffeassociates
+package org.wycliffeassociates.org.wycliffeassociates.tstudio2rc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
+import org.wycliffeassociates.tstudio2rc.RC
+import org.wycliffeassociates.tstudio2rc.getVersification
+import org.wycliffeassociates.tstudio2rc.zipDirectory
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -109,9 +112,9 @@ class TstudioToRC {
         rcConvertDir.mkdirs()
 
         val sourceDir = extractTstudio(inputFile, tempDir.absolutePath)
-        converterScript.sourceDir = sourceDir
-        converterScript.targetDir = rcConvertDir.absolutePath
-        converterScript.convertFolder(sourceDir)
+        TextToUSFM.sourceDir = sourceDir
+        TextToUSFM.targetDir = rcConvertDir.absolutePath
+        TextToUSFM.convertFolder(sourceDir)
 
         // manifest.yaml
         val manifest = buildManifest(sourceDir)
@@ -134,9 +137,9 @@ class TstudioToRC {
         val outputFilePath = File(outputDir, "RC")
         rcConvertDir.mkdirs()
 
-        converterScript.sourceDir = inputDir
-        converterScript.targetDir = rcConvertDir.absolutePath
-        converterScript.convertFolder(inputDir)
+        TextToUSFM.sourceDir = inputDir
+        TextToUSFM.targetDir = rcConvertDir.absolutePath
+        TextToUSFM.convertFolder(inputDir)
 
         // manifest.yaml
         val manifest = buildManifest(inputDir)

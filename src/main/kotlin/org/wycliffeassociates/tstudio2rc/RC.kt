@@ -1,16 +1,16 @@
-package org.wycliffeassociates
+package org.wycliffeassociates.tstudio2rc
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.wycliffeassociates.entity.ProjectManifest
-import org.wycliffeassociates.entity.TargetLanguage
 import org.wycliffeassociates.resourcecontainer.entity.Checking
 import org.wycliffeassociates.resourcecontainer.entity.DublinCore
 import org.wycliffeassociates.resourcecontainer.entity.Language
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import org.wycliffeassociates.resourcecontainer.entity.Source
+import org.wycliffeassociates.tstudio2rc.serializable.ProjectManifest
+import org.wycliffeassociates.tstudio2rc.serializable.TargetLanguage
 import java.io.File
 import java.time.LocalDate
 
