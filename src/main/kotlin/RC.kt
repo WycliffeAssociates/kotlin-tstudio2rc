@@ -23,7 +23,6 @@ class RC(
     private var loadedManifestFile = false
     private var _manifest: Map<String, Any?>? = manifest
     private var _repoName: String? = repoName
-    private var _resource: Resource? = null
     private var _projects: MutableList<Project> = mutableListOf()
     val errorMessages: MutableSet<String> = mutableSetOf()
 
@@ -83,14 +82,6 @@ class RC(
 
     val repoName: String
         get() = _repoName ?: path.takeIf { it.isNotEmpty() }?.let { File(it).name } ?: ""
-
-    val resource: Resource
-        get() = _resource ?: let {
-            val resource = rawManifest.getOrDefault("dublin_core", null)
-                ?: rawManifest
-            _resource = Resource(this, resource as? Map<String, Any?> ?: mapOf())
-            _resource!!
-        }
 
     private val sources = metadata.sourceTranslations.map { Source(it.resourceId, it.languageId, it.version) }.toMutableList()
 
