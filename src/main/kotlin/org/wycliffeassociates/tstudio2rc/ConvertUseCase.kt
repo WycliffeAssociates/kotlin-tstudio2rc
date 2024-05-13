@@ -9,7 +9,6 @@ import java.nio.file.Files
 
 class ConvertUseCase {
 
-    private val bookDirPattern = Regex("(.*)(/\\d{1,3})")
     private val verseCounts = getVersification()
 
     // source: txt2USFM-RC.py
@@ -56,23 +55,21 @@ class ConvertUseCase {
     }
 
     private fun prepareProjectDir(dir: File): String? {
-        var rootDir: String? = null
-
-        dir.walkTopDown().forEach { file ->
-            // remove .git folder
-            if (file.isDirectory && file.name == ".git") {
-                file.deleteRecursively()
-            }
-            if (file.isDirectory) {
-                val match = bookDirPattern.find(file.path)
-                if (match != null) {
-                    rootDir = match.groupValues[1]
-                    return@forEach
-                }
+        // remove .git directory
+        dir.walk().firstOrNull { path ->
+            if (path.isDirectory && path.name == ".git") {
+                path.deleteRecursively()
+                true // stop when encountering .git folder
+            } else {
+                false
             }
         }
 
-        return rootDir
+        return dir.walk()
+            .firstOrNull { f ->
+                f.isDirectory && isBookFolder(f.invariantSeparatorsPath)
+            }
+            ?.invariantSeparatorsPath
     }
 
     fun convertToOratureFile(inputFile: File, outputDir: String): File {
