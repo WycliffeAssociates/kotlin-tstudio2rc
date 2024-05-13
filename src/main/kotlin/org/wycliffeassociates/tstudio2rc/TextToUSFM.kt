@@ -6,7 +6,7 @@ import java.io.File
 /**
  * Ported from https://github.com/unfoldingWord-dev/tools/blob/develop/usfm/txt2USFM.py
  */
-class TextToUSFM {
+internal class TextToUSFM {
 
     private lateinit var inputDir: String
     private lateinit var targetDir: String

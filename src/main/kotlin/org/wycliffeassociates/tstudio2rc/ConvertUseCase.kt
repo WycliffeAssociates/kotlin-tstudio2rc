@@ -11,6 +11,60 @@ class ConvertUseCase {
 
     private val verseCounts = getVersification()
 
+    fun convertToOratureFile(inputFile: File, outputDir: String): File {
+        val tempDir = Files.createTempDirectory("tempDir").toFile()
+
+        val fileNameNoExt = inputFile.nameWithoutExtension
+        val rcConvertDir = File(outputDir, fileNameNoExt)
+        val outputFilePath = File(outputDir, "RC")
+        rcConvertDir.mkdirs()
+
+        val sourceDir = extractTstudio(inputFile, tempDir)
+        val converter = TextToUSFM()
+        converter.convertFolder(sourceDir, rcConvertDir.absolutePath)
+
+        // manifest.yaml
+        val manifest = buildManifest(sourceDir)
+        val manifestFile = rcConvertDir.resolve("manifest.yaml")
+        val mapper = ObjectMapper(YAMLFactory())
+            .registerKotlinModule()
+        mapper.writeValue(manifestFile, manifest)
+
+        val zipFileName = outputFilePath.absolutePath
+        zipDirectory(rcConvertDir, File("$zipFileName.zip"))
+
+        val outputFileName = "$fileNameNoExt.orature"
+        val oratureFile = File(outputFilePath.parent, outputFileName)
+
+        File("$zipFileName.zip").renameTo(oratureFile)
+        tempDir.deleteRecursively()
+        rcConvertDir.deleteRecursively()
+
+        return oratureFile
+    }
+
+    fun convertDir(inputDir: File, outputDir: File): File {
+        val outputRc = outputDir.resolve("${inputDir.name}.zip")
+
+        val tempConvertDir = outputDir.resolve(inputDir.name)
+        tempConvertDir.mkdirs()
+
+        val converter = TextToUSFM()
+        converter.convertFolder(inputDir.invariantSeparatorsPath, tempConvertDir.invariantSeparatorsPath)
+
+        // manifest.yaml
+        val manifest = buildManifest(inputDir.invariantSeparatorsPath)
+        val manifestFile = tempConvertDir.resolve("manifest.yaml")
+        val mapper = ObjectMapper(YAMLFactory())
+            .registerKotlinModule()
+        mapper.writeValue(manifestFile, manifest)
+
+        zipDirectory(tempConvertDir, outputRc)
+        tempConvertDir.deleteRecursively()
+
+        return outputRc
+    }
+
     // source: txt2USFM-RC.py
     private fun makeUsfmFilename(bookSlug: String): String {
         val bookId = bookSlug.uppercase()
@@ -70,59 +124,5 @@ class ConvertUseCase {
                 f.isDirectory && isBookFolder(f.invariantSeparatorsPath)
             }
             ?.invariantSeparatorsPath
-    }
-
-    fun convertToOratureFile(inputFile: File, outputDir: String): File {
-        val tempDir = Files.createTempDirectory("tempDir").toFile()
-
-        val fileNameNoExt = inputFile.nameWithoutExtension
-        val rcConvertDir = File(outputDir, fileNameNoExt)
-        val outputFilePath = File(outputDir, "RC")
-        rcConvertDir.mkdirs()
-
-        val sourceDir = extractTstudio(inputFile, tempDir)
-        val converter = TextToUSFM()
-        converter.convertFolder(sourceDir, rcConvertDir.absolutePath)
-
-        // manifest.yaml
-        val manifest = buildManifest(sourceDir)
-        val manifestFile = rcConvertDir.resolve("manifest.yaml")
-        val mapper = ObjectMapper(YAMLFactory())
-            .registerKotlinModule()
-        mapper.writeValue(manifestFile, manifest)
-
-        val zipFileName = outputFilePath.absolutePath
-        zipDirectory(rcConvertDir, File("$zipFileName.zip"))
-
-        val outputFileName = "$fileNameNoExt.orature"
-        val oratureFile = File(outputFilePath.parent, outputFileName)
-
-        File("$zipFileName.zip").renameTo(oratureFile)
-        tempDir.deleteRecursively()
-        rcConvertDir.deleteRecursively()
-
-        return oratureFile
-    }
-
-    fun convertDir(inputDir: File, outputDir: File): File {
-        val outputRc = outputDir.resolve("${inputDir.name}.zip")
-
-        val tempConvertDir = outputDir.resolve(inputDir.name)
-        tempConvertDir.mkdirs()
-
-        val converter = TextToUSFM()
-        converter.convertFolder(inputDir.invariantSeparatorsPath, tempConvertDir.invariantSeparatorsPath)
-
-        // manifest.yaml
-        val manifest = buildManifest(inputDir.invariantSeparatorsPath)
-        val manifestFile = tempConvertDir.resolve("manifest.yaml")
-        val mapper = ObjectMapper(YAMLFactory())
-            .registerKotlinModule()
-        mapper.writeValue(manifestFile, manifest)
-
-        zipDirectory(tempConvertDir, outputRc)
-        tempConvertDir.deleteRecursively()
-
-        return outputRc
     }
 }
