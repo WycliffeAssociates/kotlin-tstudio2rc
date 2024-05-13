@@ -36,7 +36,7 @@ class TextToUSFM {
 
         var missingChapter = ""
         if (vnStart == 1 && lacksChapter(text)) {
-            missingChapter = directory.toString().substring(1)
+            missingChapter = "${directory.name.toInt()}"
         }
         val missingVerses = lackingVerses(text, verseRange, numbersRe)
         val missingMarkers = lackingVerses(text, verseRange, verseMarkerRe)
@@ -52,16 +52,16 @@ class TextToUSFM {
             text = fixInorMarkers(text, verseRange)
         }
 
-        // TODO: Should we delete this?
-//        if (text != origText) {
+        if (text != origText) {
+            // TODO: Should we get rid of these .orig back up files?
 //            val bakPath = File("$path.orig")
 //            if (!bakPath.exists()) {
 //                path.copyTo(bakPath)
 //            }
-//            val output = path.bufferedWriter()
-//            output.write(text)
-//            output.close()
-//        }
+            path.bufferedWriter().use {
+                it.write(text)
+            }
+        }
     }
 
     fun lacksChapter(text: String): Boolean {
