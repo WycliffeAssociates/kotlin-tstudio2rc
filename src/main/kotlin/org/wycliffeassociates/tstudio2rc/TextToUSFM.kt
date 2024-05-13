@@ -544,12 +544,17 @@ class TextToUSFM {
     }
 
     fun writeHeader(writer: BufferedWriter, bookId: String, bookTitle: String) {
-        writer.write("\\id $bookId\n\\ide UTF-8\n")
-        writer.write("\\h $bookTitle\n")
-        writer.write("\\toc1 $bookTitle\n")
-        writer.write("\\toc2 $bookTitle\n")
-        writer.write("\\toc3 ${bookId.lowercase()}\n")
-        writer.write("\\mt $bookTitle\n\n")
+        val content = """
+            \id ${bookId.uppercase()}
+            \ide UTF-8
+            \h $bookTitle
+            \toc1 $bookTitle
+            \toc2 $bookTitle
+            \toc3 ${bookId.lowercase()}
+            \mt $bookTitle
+        """.trimIndent() + "\n"
+
+        writer.write(content)
     }
 
     fun convertBook(path: String, bookId: String, bookTitle: String) {
