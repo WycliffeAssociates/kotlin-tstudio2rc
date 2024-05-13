@@ -362,8 +362,7 @@ class TextToUSFM {
 
     // Returns true if the specified path looks like a collection of chapter folders
     fun isBookFolder(path: String): Boolean {
-        val chapterPath = File(path, "01")
-        return chapterPath.isDirectory
+        return File(path).resolve("front").isDirectory || File(path).resolve("01").isDirectory
     }
 
     // Parses all manifest.json files in the current folder.
@@ -586,8 +585,14 @@ class TextToUSFM {
         inputDir = folder
         targetDir = outputDir
         try {
-            File(inputDir).walk().forEach { file ->
-                if (file.isDirectory && isBookFolder(file.absolutePath)) {
+            File(inputDir)
+                .walk()
+                .filter {
+                    !it.path.contains(".git") &&
+                        it.isDirectory &&
+                            isBookFolder(it.absolutePath)
+                }
+                .forEach { file ->
                     println("Converting: ${file.absolutePath}\n")
                     val bookId = getBookId(file.absolutePath)
                     val bookTitle = getBookTitle()
@@ -603,7 +608,6 @@ class TextToUSFM {
                         }
                     }
                 }
-            }
         } catch (e: Exception) {
             throw e
         }

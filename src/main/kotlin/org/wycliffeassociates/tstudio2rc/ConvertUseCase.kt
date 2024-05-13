@@ -31,13 +31,14 @@ class ConvertUseCase {
         val manifest = tstudioMetadata.rcManifest()
         manifest.dublinCore.creator = "BTT-Writer"
 
-        val projectSlug = tstudioMetadata.manifest.project.id
+        val project = tstudioMetadata.rcProject
+        val projectSlug = project.identifier
         val projectPath = "./${makeUsfmFilename(projectSlug)}"
         val anthology = if ((verseCounts[projectSlug.uppercase()]?.sort ?: 0) < 40) "ot" else "nt"
 
         manifest.projects.forEach { p ->
             if (p.identifier == projectSlug) {
-                p.title = tstudioMetadata.manifest.project.name.ifEmpty { projectSlug }
+                p.title = project.title.ifEmpty { projectSlug }
                 p.path = projectPath
                 p.sort = verseCounts[projectSlug.uppercase()]?.sort ?: 0
                 p.versification = "ulb"

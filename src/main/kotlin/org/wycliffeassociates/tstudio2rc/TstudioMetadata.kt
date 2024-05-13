@@ -12,18 +12,17 @@ import org.wycliffeassociates.resourcecontainer.entity.Source
 import org.wycliffeassociates.tstudio2rc.serializable.ProjectManifest
 import org.wycliffeassociates.tstudio2rc.serializable.TargetLanguage
 import java.io.File
-import java.io.InvalidObjectException
 import java.time.LocalDate
 
 class TstudioMetadata(path: String) {
 
     private val projectDir = File(path)
-    val manifest: ProjectManifest
+    private val tsManifest: ProjectManifest
     init {
         if (!projectDir.isDirectory) {
             throw IllegalArgumentException("Provided path is not a directory: $path")
         }
-        manifest = try {
+        tsManifest = try {
             parseManifestFile()
         } catch (e: Exception) {
             throw IllegalArgumentException("$path is not a valid project.", e)
@@ -36,7 +35,7 @@ class TstudioMetadata(path: String) {
         return mapper.readValue(file)
     }
 
-    private val sources = manifest.sourceTranslations
+    private val sources = tsManifest.sourceTranslations
         .map {
             Source(it.resourceId, it.languageId, it.version)
         }
@@ -46,16 +45,16 @@ class TstudioMetadata(path: String) {
         get() = DublinCore(
             type = "book",
             conformsTo = "rc0.2",
-            format = "text/${manifest.format}",
-            identifier = manifest.resource.id,
-            title = manifest.resource.name,
+            format = "text/${tsManifest.format}",
+            identifier = tsManifest.resource.id,
+            title = tsManifest.resource.name,
             subject = "Bible",
             description = "",
-            language = mapToLanguageEntity(manifest.targetLanguage),
+            language = mapToLanguageEntity(tsManifest.targetLanguage),
             source = sources,
             rights = "CC BY-SA 4.0",
             creator = "Unknown Creator",
-            contributor = manifest.translators.toMutableList(),
+            contributor = tsManifest.translators.toMutableList(),
             relation = mutableListOf(),
             publisher = "Door43",
             issued = LocalDate.now().toString(),
@@ -67,8 +66,8 @@ class TstudioMetadata(path: String) {
         get() {
             val projectPath = if (projectDir.resolve("content").isDirectory) "./content" else "./"
             return RCProject(
-                identifier = manifest.project.id,
-                title = manifest.project.name,
+                identifier = tsManifest.project.id,
+                title = tsManifest.project.name,
                 sort = 1,
                 path = projectPath,
                 versification = "kjv",
