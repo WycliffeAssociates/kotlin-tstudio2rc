@@ -6,6 +6,7 @@ import org.wycliffeassociates.resourcecontainer.entity.Language
 import org.wycliffeassociates.resourcecontainer.entity.Project
 import org.wycliffeassociates.resourcecontainer.entity.Source
 import org.wycliffeassociates.tstudio2rc.RC
+import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -41,8 +42,8 @@ class MetadataParserTest {
             contributor = mutableListOf("Omid.Rahmani.baneh", "dana"),
             relation = mutableListOf(),
             publisher = "Door43",
-            issued = "2024-05-10",
-            modified = "2024-05-10",
+            issued = LocalDate.now().toString(),
+            modified = LocalDate.now().toString(),
             version = "1"
         )
         val project = Project(
