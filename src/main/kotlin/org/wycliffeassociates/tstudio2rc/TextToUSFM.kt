@@ -1,8 +1,5 @@
-package org.wycliffeassociates.org.wycliffeassociates.tstudio2rc
+package org.wycliffeassociates.tstudio2rc
 
-import org.wycliffeassociates.tstudio2rc.RCProject
-import org.wycliffeassociates.tstudio2rc.getVersification
-import org.wycliffeassociates.tstudio2rc.loadJsonObject
 import java.io.BufferedWriter
 import java.io.File
 

@@ -1,4 +1,4 @@
-package org.wycliffeassociates.org.wycliffeassociates.tstudio2rc
+package org.wycliffeassociates.tstudio2rc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
