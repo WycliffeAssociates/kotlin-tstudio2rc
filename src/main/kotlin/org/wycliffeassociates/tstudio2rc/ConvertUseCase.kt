@@ -11,12 +11,12 @@ class ConvertUseCase {
 
     private val verseCounts = getVersification()
 
-    fun convertToOratureFile(inputFile: File, outputDir: String): File {
+    fun convertToOratureFile(inputFile: File, outputDir: File): File {
         val tempDir = Files.createTempDirectory("tempDir").toFile()
 
         val fileNameNoExt = inputFile.nameWithoutExtension
-        val rcConvertDir = File(outputDir, fileNameNoExt)
-        val outputFilePath = File(outputDir, "RC")
+        val rcConvertDir = outputDir.resolve(fileNameNoExt)
+        val outputFilePath = outputDir.resolve("RC")
         rcConvertDir.mkdirs()
 
         val sourceDir = extractTstudio(inputFile, tempDir)
