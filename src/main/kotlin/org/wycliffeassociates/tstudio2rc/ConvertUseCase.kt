@@ -4,13 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
-import org.wycliffeassociates.tstudio2rc.RC
-import org.wycliffeassociates.tstudio2rc.getVersification
-import org.wycliffeassociates.tstudio2rc.zipDirectory
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.zip.ZipFile
 
 class ConvertUseCase {
 
@@ -32,17 +27,17 @@ class ConvertUseCase {
 
     // constructs the manifest based on the manifest.json in project directory
     private fun buildManifest(dir: String): Manifest {
-        val rc = RC(directory = dir)
-        val manifest = rc.rcManifest()
+        val tstudioMetadata = TstudioMetadata(dir)
+        val manifest = tstudioMetadata.rcManifest()
         manifest.dublinCore.creator = "BTT-Writer"
 
-        val projectSlug = rc.rcProject.identifier
+        val projectSlug = tstudioMetadata.rcProject.identifier
         val projectPath = "./${makeUsfmFilename(projectSlug)}"
         val anthology = if ((verseCounts[projectSlug.uppercase()]?.sort ?: 0) < 40) "ot" else "nt"
 
         manifest.projects.forEach { p ->
             if (p.identifier == projectSlug) {
-                p.title = rc.manifest.project.name
+                p.title = tstudioMetadata.manifest.project.name
                 p.path = projectPath
                 p.sort = verseCounts[projectSlug.uppercase()]?.sort ?: 0
                 p.versification = "ulb"
@@ -54,29 +49,15 @@ class ConvertUseCase {
     }
 
     // unzip project and returns the extracted path
-    private fun extractTstudio(file: File, destinationDir: String): String {
-        ZipFile(file).use { zip ->
-            zip.entries().asSequence().forEach { entry ->
-                val entryDestination = Paths.get(destinationDir, entry.name)
-                if (entry.isDirectory) {
-                    Files.createDirectories(entryDestination)
-                } else {
-                    zip.getInputStream(entry).use { input ->
-                        Files.newOutputStream(entryDestination).use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-                }
-            }
-        }
-
+    private fun extractTstudio(file: File, destinationDir: File): String {
+        unzipFile(file, destinationDir)
         return prepareProjectDir(destinationDir)!!
     }
 
-    private fun prepareProjectDir(dir: String): String? {
+    private fun prepareProjectDir(dir: File): String? {
         var rootDir: String? = null
 
-        File(dir).walkTopDown().forEach { file ->
+        dir.walkTopDown().forEach { file ->
             // remove .git folder
             if (file.isDirectory && file.name == ".git") {
                 file.deleteRecursively()
@@ -101,7 +82,7 @@ class ConvertUseCase {
         val outputFilePath = File(outputDir, "RC")
         rcConvertDir.mkdirs()
 
-        val sourceDir = extractTstudio(inputFile, tempDir.absolutePath)
+        val sourceDir = extractTstudio(inputFile, tempDir)
         val converter = TextToUSFM()
         converter.convertFolder(sourceDir, rcConvertDir.absolutePath)
 

@@ -7,7 +7,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.tstudio2rc.serializable.BookVersification
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 fun loadYamlObject(path: String): Map<String, Any> {
@@ -43,6 +46,23 @@ fun zipDirectory(sourceDir: File, zipFile: File) {
                 zos.putNextEntry(zipEntry)
                 file.inputStream().use { input ->
                     input.copyTo(zos)
+                }
+            }
+        }
+    }
+}
+
+fun unzipFile(file: File, destinationDir: File) {
+    ZipFile(file).use { zip ->
+        zip.entries().asSequence().forEach { entry ->
+            val entryDestination = Paths.get(destinationDir.invariantSeparatorsPath, entry.name)
+            if (entry.isDirectory) {
+                Files.createDirectories(entryDestination)
+            } else {
+                zip.getInputStream(entry).use { input ->
+                    Files.newOutputStream(entryDestination).use { output ->
+                        input.copyTo(output)
+                    }
                 }
             }
         }

@@ -5,7 +5,7 @@ import org.wycliffeassociates.resourcecontainer.entity.DublinCore
 import org.wycliffeassociates.resourcecontainer.entity.Language
 import org.wycliffeassociates.resourcecontainer.entity.Project
 import org.wycliffeassociates.resourcecontainer.entity.Source
-import org.wycliffeassociates.tstudio2rc.RC
+import org.wycliffeassociates.tstudio2rc.TstudioMetadata
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +15,7 @@ class MetadataParserTest {
     @Test
     fun testManifest() {
         val dir = javaClass.classLoader.getResource("tstudio/ckb_2pe_text_reg").file
-        val rc = RC(dir)
+        val tstudioMetadata = TstudioMetadata(dir)
         val dublinCore = DublinCore(
             type = "book",
             conformsTo = "rc0.2",
@@ -55,7 +55,7 @@ class MetadataParserTest {
         )
         val checking = Checking(mutableListOf("Wycliffe Associates"), "1")
 
-        val manifest = rc.rcManifest()
+        val manifest = tstudioMetadata.rcManifest()
 
         assertEquals(dublinCore, manifest.dublinCore)
         assertEquals(mutableListOf(project), manifest.projects)

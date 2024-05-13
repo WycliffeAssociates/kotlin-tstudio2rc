@@ -12,28 +12,35 @@ import org.wycliffeassociates.resourcecontainer.entity.Source
 import org.wycliffeassociates.tstudio2rc.serializable.ProjectManifest
 import org.wycliffeassociates.tstudio2rc.serializable.TargetLanguage
 import java.io.File
+import java.io.InvalidObjectException
 import java.time.LocalDate
 
-class RC(directory: String? = null) {
+class TstudioMetadata(path: String) {
 
-    private var _dir: String? = directory
+    private val projectDir = File(path)
+    val manifest: ProjectManifest
     init {
-        _dir?.let { assert(File(it).isDirectory) }
+        if (!projectDir.isDirectory) {
+            throw IllegalArgumentException("Provided path is not a directory: $path")
+        }
+        manifest = try {
+            parseManifestFile()
+        } catch (e: Exception) {
+            throw IllegalArgumentException("$path is not a valid project.", e)
+        }
     }
-
-    val manifest: ProjectManifest = parseManifestFile()
 
     private fun parseManifestFile(): ProjectManifest {
-        val file = File("$path/manifest.json")
+        val file = projectDir.resolve("manifest.json")
         val mapper = ObjectMapper(JsonFactory()).registerKotlinModule()
-        val metadata: ProjectManifest = mapper.readValue(file)
-        return metadata
+        return mapper.readValue(file)
     }
 
-    val path: String
-        get() = _dir?.trimEnd('/') ?: ""
-
-    private val sources = manifest.sourceTranslations.map { Source(it.resourceId, it.languageId, it.version) }.toMutableList()
+    private val sources = manifest.sourceTranslations
+        .map {
+            Source(it.resourceId, it.languageId, it.version)
+        }
+        .toMutableList()
 
     private val dublinCore: DublinCore
         get() = DublinCore(
@@ -58,7 +65,7 @@ class RC(directory: String? = null) {
 
     val rcProject: RCProject
         get() {
-            val projectPath = if (File("${path}/content").isDirectory) "./content" else "./"
+            val projectPath = if (projectDir.resolve("content").isDirectory) "./content" else "./"
             return RCProject(
                 identifier = manifest.project.id,
                 title = manifest.project.name,
