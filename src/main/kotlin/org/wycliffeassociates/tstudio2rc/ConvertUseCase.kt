@@ -31,16 +31,13 @@ class ConvertUseCase {
         mapper.writeValue(manifestFile, manifest)
 
         val zipFileName = outputFilePath.absolutePath
-        zipDirectory(rcConvertDir, File("$zipFileName.zip"))
+        val zipFile = File("$zipFileName.zip")
+        zipDirectory(rcConvertDir, zipFile)
 
-        val outputFileName = "$fileNameNoExt.orature"
-        val oratureFile = File(outputFilePath.parent, outputFileName)
-
-        File("$zipFileName.zip").renameTo(oratureFile)
         tempDir.deleteRecursively()
         rcConvertDir.deleteRecursively()
 
-        return oratureFile
+        return zipFile
     }
 
     fun convertDir(inputDir: File, outputDir: File): File {
