@@ -37,7 +37,7 @@ class TstudioToRC {
         val manifest = rc.rcManifest()
         manifest.dublinCore.creator = "BTT-Writer"
 
-        val projectSlug = rc.project()!!.identifier
+        val projectSlug = rc.rcProject.identifier
         val projectPath = "./${makeUsfmFilename(projectSlug)}"
         val anthology = if ((verseCounts[projectSlug.uppercase()]?.sort ?: 0) < 40) "ot" else "nt"
 

@@ -16,7 +16,6 @@ class MetadataParserTest {
     fun testManifest() {
         val dir = javaClass.classLoader.getResource("tstudio/ckb_2pe_text_reg").file
         val rc = RC(dir)
-        val manifest = rc.rcManifest()
         val dublinCore = DublinCore(
             type = "book",
             conformsTo = "rc0.2",
@@ -55,6 +54,8 @@ class MetadataParserTest {
             categories = mutableListOf()
         )
         val checking = Checking(mutableListOf("Wycliffe Associates"), "1")
+
+        val manifest = rc.rcManifest()
 
         assertEquals(dublinCore, manifest.dublinCore)
         assertEquals(mutableListOf(project), manifest.projects)
