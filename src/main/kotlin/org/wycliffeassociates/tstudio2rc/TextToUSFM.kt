@@ -3,17 +3,17 @@ package org.wycliffeassociates.org.wycliffeassociates.tstudio2rc
 import org.wycliffeassociates.tstudio2rc.RCProject
 import org.wycliffeassociates.tstudio2rc.getVersification
 import org.wycliffeassociates.tstudio2rc.loadJsonObject
+import java.io.BufferedWriter
 import java.io.File
 
 /**
  * Ported from https://github.com/unfoldingWord-dev/tools/blob/develop/usfm/txt2USFM.py
  */
-object TextToUSFM {
+class TextToUSFM {
 
-    var sourceDir = "/path/to/input/tstudio"
-    var targetDir = "/output/dir"
-    var languageCode = ""
-    val markChunks = false
+    private lateinit var inputDir: String
+    private lateinit var targetDir: String
+    private var languageCode = ""
 
     private val usfmVerses = getVersification()
     private val verseMarkerRe = Regex("[ \\n\\t]*\\\\v *([\\d]{1,3})")
@@ -413,7 +413,7 @@ object TextToUSFM {
 // Extracts the first line of that file as the book title.
     fun getBookTitle(): String {
         var bookTitle = ""
-        var f = File(sourceDir).resolve("front").resolve("title.txt")
+        var f = File(inputDir).resolve("front").resolve("title.txt")
         if (!f.exists()) {
 //            f = File("00", "title.txt").absolutePath
         }
@@ -543,30 +543,28 @@ object TextToUSFM {
         manifest.close()
     }
 
-    fun shortName(longPath: String): String {
-        var shortName = longPath
-        if (sourceDir in longPath && sourceDir != longPath) {
-            shortName = longPath.substring(sourceDir.length + 1)
-        }
-        return shortName
-    }
+    fun writeHeader(writer: BufferedWriter, bookId: String, bookTitle: String) {
+        val content = """
+            \id ${bookId.uppercase()}
+            \ide UTF-8
+            \h $bookTitle
+            \toc1 $bookTitle
+            \toc2 $bookTitle
+            \toc3 ${bookId.lowercase()}
+            \mt $bookTitle
+        """.trimIndent() + "\n"
 
-    fun writeHeader(usfmfile: File, bookId: String, bookTitle: String) {
-        usfmfile.appendText("\\id $bookId\n\\ide UTF-8\n")
-        usfmfile.appendText("\\h $bookTitle\n")
-        usfmfile.appendText("\\toc1 $bookTitle\n")
-        usfmfile.appendText("\\toc2 $bookTitle\n")
-        usfmfile.appendText("\\toc3 ${bookId.lowercase()}\n")
-        usfmfile.appendText("\\mt $bookTitle\n\n")
+        writer.write(content)
     }
 
     fun convertBook(path: String, bookId: String, bookTitle: String) {
         val bookDir = File(path)
         val chapters = listChapters(bookDir)
         val usfmPath = File(targetDir, makeUsfmFilename(bookId))
-        writeHeader(usfmPath, bookId, bookTitle)
 
         usfmPath.bufferedWriter().use { usfmWriter ->
+            writeHeader(usfmWriter, bookId, bookTitle)
+
             for (chap in chapters) {
                 val chapterTitle = getChapterTitle(path, chap.name)
                 val chunks = listChunks(chap)
@@ -587,10 +585,11 @@ object TextToUSFM {
         // dumpChapterTitles(titles, titlesPath)
     }
 
-    fun convertFolder(folder: String?) {
-        val currentFolder = folder ?: System.getProperty("user.dir")
+    fun convertFolder(folder: String, outputDir: String) {
+        inputDir = folder
+        targetDir = outputDir
         try {
-            File(currentFolder).walk().forEach { file ->
+            File(inputDir).walk().forEach { file ->
                 if (file.isDirectory && isBookFolder(file.absolutePath)) {
                     println("Converting: ${file.absolutePath}\n")
                     val bookId = getBookId(file.absolutePath)
@@ -629,19 +628,17 @@ object TextToUSFM {
         return File(targetDir).resolve("projects.yaml").toString()
     }
 
-    fun convert() {
-        if (!File(targetDir).isDirectory) {
-            File(targetDir).mkdir()
-        }
+    fun convert(dir: String, outputDir: String) {
+        targetDir = outputDir
+        File(targetDir).mkdir()
         File(makeManifestPath()).delete()
 
-        val dir = System.getProperty("user.dir")
         if (isBookFolder(dir)) {
-            convertFolder(dir)
+            convertFolder(dir, outputDir)
         } else {
             File(dir).listFiles()?.forEach { folder ->
                 if (isBookFolder(folder.absolutePath)) {
-                    convertFolder(folder.absolutePath)
+                    convertFolder(folder.absolutePath, outputDir)
                 }
             }
         }

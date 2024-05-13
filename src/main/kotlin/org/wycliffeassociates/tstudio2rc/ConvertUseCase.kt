@@ -12,11 +12,10 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
-class TstudioToRC {
+class ConvertUseCase {
 
     private val bookDirPattern = Regex("(.*)(/\\d{1,3})")
     private val verseCounts = getVersification()
-    private val converterScript = TextToUSFM
 
     // source: txt2USFM-RC.py
     private fun makeUsfmFilename(bookSlug: String): String {
@@ -37,7 +36,7 @@ class TstudioToRC {
         val manifest = rc.rcManifest()
         manifest.dublinCore.creator = "BTT-Writer"
 
-        val projectSlug = rc.project()!!.identifier
+        val projectSlug = rc.rcProject.identifier
         val projectPath = "./${makeUsfmFilename(projectSlug)}"
         val anthology = if ((verseCounts[projectSlug.uppercase()]?.sort ?: 0) < 40) "ot" else "nt"
 
@@ -102,9 +101,8 @@ class TstudioToRC {
         rcConvertDir.mkdirs()
 
         val sourceDir = extractTstudio(inputFile, tempDir.absolutePath)
-        TextToUSFM.sourceDir = sourceDir
-        TextToUSFM.targetDir = rcConvertDir.absolutePath
-        TextToUSFM.convertFolder(sourceDir)
+        val converter = TextToUSFM()
+        converter.convertFolder(sourceDir, rcConvertDir.absolutePath)
 
         // manifest.yaml
         val manifest = buildManifest(sourceDir)
@@ -131,9 +129,8 @@ class TstudioToRC {
         val tempConvertDir = outputDir.resolve(inputDir.name)
         tempConvertDir.mkdirs()
 
-        TextToUSFM.sourceDir = inputDir.invariantSeparatorsPath
-        TextToUSFM.targetDir = tempConvertDir.invariantSeparatorsPath
-        TextToUSFM.convertFolder(inputDir.invariantSeparatorsPath)
+        val converter = TextToUSFM()
+        converter.convertFolder(inputDir.invariantSeparatorsPath, tempConvertDir.invariantSeparatorsPath)
 
         // manifest.yaml
         val manifest = buildManifest(inputDir.invariantSeparatorsPath)
