@@ -3,6 +3,7 @@ package org.wycliffeassociates.org.wycliffeassociates.tstudio2rc
 import org.wycliffeassociates.tstudio2rc.RCProject
 import org.wycliffeassociates.tstudio2rc.getVersification
 import org.wycliffeassociates.tstudio2rc.loadJsonObject
+import java.io.BufferedWriter
 import java.io.File
 
 /**
@@ -542,22 +543,23 @@ class TextToUSFM {
         manifest.close()
     }
 
-    fun writeHeader(usfmfile: File, bookId: String, bookTitle: String) {
-        usfmfile.appendText("\\id $bookId\n\\ide UTF-8\n")
-        usfmfile.appendText("\\h $bookTitle\n")
-        usfmfile.appendText("\\toc1 $bookTitle\n")
-        usfmfile.appendText("\\toc2 $bookTitle\n")
-        usfmfile.appendText("\\toc3 ${bookId.lowercase()}\n")
-        usfmfile.appendText("\\mt $bookTitle\n\n")
+    fun writeHeader(writer: BufferedWriter, bookId: String, bookTitle: String) {
+        writer.write("\\id $bookId\n\\ide UTF-8\n")
+        writer.write("\\h $bookTitle\n")
+        writer.write("\\toc1 $bookTitle\n")
+        writer.write("\\toc2 $bookTitle\n")
+        writer.write("\\toc3 ${bookId.lowercase()}\n")
+        writer.write("\\mt $bookTitle\n\n")
     }
 
     fun convertBook(path: String, bookId: String, bookTitle: String) {
         val bookDir = File(path)
         val chapters = listChapters(bookDir)
         val usfmPath = File(targetDir, makeUsfmFilename(bookId))
-        writeHeader(usfmPath, bookId, bookTitle)
 
         usfmPath.bufferedWriter().use { usfmWriter ->
+            writeHeader(usfmWriter, bookId, bookTitle)
+
             for (chap in chapters) {
                 val chapterTitle = getChapterTitle(path, chap.name)
                 val chunks = listChunks(chap)
