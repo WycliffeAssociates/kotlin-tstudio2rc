@@ -152,19 +152,19 @@ class TextToUSFM {
         return newText
     }
 
-    val sub0Re = Regex("/v +[1-9]")      // slash v
-    val sub0bRe = Regex("\\\\v +[1-9]")  // double backslash v
-    val sub1Re = Regex("[^\n ]\\\\v ")     // no space before \v
-    val sub2Re = Regex("[\n .,\"'?!]\\\\ *v[1-9]")   // no space before verse number, possible space between \ and v
-    val sub2mRe = Regex("\\\\ *v[1-9]")       // no space before verse number, possible space between \ and v -- match
-    val sub3Re = Regex("\\\\v +[0-9\\-]+[^0-9\\-\n ]")       // no space after verse number
-    val sub4Re = Regex("(\\\\v +[0-9\\-]+ +)\\\\v +[^1-9]")   // \v 10 \v The...
-    val sub5Re = Regex("\\\\v( +\\\\v +[0-9\\-]+ +)")         // \v \v 10
-    val sub6Re = Regex("[\n ]\\\\ v [1-9]")           // space between \ and v
-    val sub6mRe = Regex("\\\\ v [1-9]")               // space between \ and v -- match
-    val sub7Re = Regex("[\n ]v [1-9]")              // missing backslash
-    val sub8Re = Regex("(.)([\n ]*\\\\v [1-9]+) ?([.,:;]) ")   // Punctuation after verse marker
-    val sub9Re = Regex("(\\\\v [1-9]+) ?([.,:;]) ")
+    val sub0Re = Regex("""/v +[1-9]""")      // slash v
+    val sub0bRe = Regex("""\\\\v +[1-9]""")  // double backslash v
+    val sub1Re = Regex("""[^\n ]\\\\v """)     // no space before \v
+    val sub2Re = Regex("""[\n .,"'?!]\\\\ *v[1-9]""")   // no space before verse number, possible space between \ and v
+    val sub2mRe = Regex("""\\\\ *v[1-9]""")       // no space before verse number, possible space between \ and v -- match
+    val sub3Re = Regex("""\\v +[0-9\-]+[^0-9\-\n ]""")      // no space after verse number
+    val sub4Re = Regex("""(\\\\v +[0-9\\-]+ +)\\\\v +[^1-9]""")   // \v 10 \v The...
+    val sub5Re = Regex("""\\\\v( +\\\\v +[0-9\\-]+ +)""")         // \v \v 10
+    val sub6Re = Regex("""[\n ]\\\\ v [1-9]""")           // space between \ and v
+    val sub6mRe = Regex("""\\\\ v [1-9]""")               // space between \ and v -- match
+    val sub7Re = Regex("""[\n ]v [1-9]""")              // missing backslash
+    val sub8Re = Regex("""(.)([\n ]*\\\\v [1-9]+) ?([.,:;]) """)   // Punctuation after verse marker
+    val sub9Re = Regex("""(\\\\v [1-9]+) ?([.,:;]) """)
 
     fun fixVerseMarkers(text: String): String {
         var result = text
