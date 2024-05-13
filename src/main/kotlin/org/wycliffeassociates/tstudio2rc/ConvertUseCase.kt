@@ -99,6 +99,7 @@ class ConvertUseCase {
 
         File("$zipFileName.zip").renameTo(oratureFile)
         tempDir.deleteRecursively()
+        rcConvertDir.deleteRecursively()
 
         return oratureFile
     }
