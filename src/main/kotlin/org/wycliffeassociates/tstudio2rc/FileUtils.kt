@@ -36,6 +36,11 @@ fun getVersification(): Map<String, BookVersification> {
     return mapper.readValue(File(path))
 }
 
+// Returns true if the specified path looks like a collection of chapter folders
+fun isBookFolder(path: String): Boolean {
+    return File(path).resolve("front").isDirectory || File(path).resolve("01").isDirectory
+}
+
 fun zipDirectory(sourceDir: File, zipFile: File) {
     zipFile.createNewFile()
     ZipOutputStream(zipFile.outputStream()).use { zos ->

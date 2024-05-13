@@ -360,11 +360,6 @@ class TextToUSFM {
         return dirname != "00" && Regex("""\d{2,3}""").matches(dirname)
     }
 
-    // Returns true if the specified path looks like a collection of chapter folders
-    fun isBookFolder(path: String): Boolean {
-        return File(path).resolve("front").isDirectory || File(path).resolve("01").isDirectory
-    }
-
     // Parses all manifest.json files in the current folder.
 // If more than one manifest.json, their names vary.
 // Return upper case bookId, or empty string if failed to retrieve.

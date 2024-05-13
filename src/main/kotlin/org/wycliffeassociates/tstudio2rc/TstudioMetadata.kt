@@ -16,7 +16,13 @@ import java.time.LocalDate
 
 class TstudioMetadata(path: String) {
 
+    // navigate to project's root directory
     private val projectDir = File(path)
+        .walk()
+        .firstOrNull {
+            isBookFolder(it.invariantSeparatorsPath)
+        }!!
+
     private val tsManifest: ProjectManifest
     init {
         if (!projectDir.isDirectory) {
