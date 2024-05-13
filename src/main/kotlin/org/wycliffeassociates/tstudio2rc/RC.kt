@@ -21,7 +21,7 @@ class RC(directory: String? = null) {
         _dir?.let { assert(File(it).isDirectory) }
     }
 
-    val metadata: ProjectManifest = parseManifestFile()
+    val manifest: ProjectManifest = parseManifestFile()
 
     private fun parseManifestFile(): ProjectManifest {
         val file = File("$path/manifest.json")
@@ -33,22 +33,22 @@ class RC(directory: String? = null) {
     val path: String
         get() = _dir?.trimEnd('/') ?: ""
 
-    private val sources = metadata.sourceTranslations.map { Source(it.resourceId, it.languageId, it.version) }.toMutableList()
+    private val sources = manifest.sourceTranslations.map { Source(it.resourceId, it.languageId, it.version) }.toMutableList()
 
     private val dublinCore: DublinCore
         get() = DublinCore(
             type = "book",
             conformsTo = "rc0.2",
-            format = "text/${metadata.format}",
-            identifier = metadata.resource.id,
-            title = metadata.resource.name,
+            format = "text/${manifest.format}",
+            identifier = manifest.resource.id,
+            title = manifest.resource.name,
             subject = "Bible",
             description = "",
-            language = mapToLanguageEntity(metadata.targetLanguage),
+            language = mapToLanguageEntity(manifest.targetLanguage),
             source = sources,
             rights = "CC BY-SA 4.0",
             creator = "Unknown Creator",
-            contributor = metadata.translators.toMutableList(),
+            contributor = manifest.translators.toMutableList(),
             relation = mutableListOf(),
             publisher = "Door43",
             issued = LocalDate.now().toString(),
@@ -60,8 +60,8 @@ class RC(directory: String? = null) {
         get() {
             val projectPath = if (File("${path}/content").isDirectory) "./content" else "./"
             return RCProject(
-                identifier = metadata.project.id,
-                title = metadata.project.name,
+                identifier = manifest.project.id,
+                title = manifest.project.name,
                 sort = 1,
                 path = projectPath,
                 versification = "kjv",

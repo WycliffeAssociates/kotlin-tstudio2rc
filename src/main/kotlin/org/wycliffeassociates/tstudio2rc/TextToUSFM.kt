@@ -8,12 +8,11 @@ import java.io.File
 /**
  * Ported from https://github.com/unfoldingWord-dev/tools/blob/develop/usfm/txt2USFM.py
  */
-object TextToUSFM {
+class TextToUSFM {
 
-    var sourceDir = "/path/to/input/tstudio"
-    var targetDir = "/output/dir"
-    var languageCode = ""
-    val markChunks = false
+    private lateinit var inputDir: String
+    private lateinit var targetDir: String
+    private var languageCode = ""
 
     private val usfmVerses = getVersification()
     private val verseMarkerRe = Regex("[ \\n\\t]*\\\\v *([\\d]{1,3})")
@@ -413,7 +412,7 @@ object TextToUSFM {
 // Extracts the first line of that file as the book title.
     fun getBookTitle(): String {
         var bookTitle = ""
-        var f = File(sourceDir).resolve("front").resolve("title.txt")
+        var f = File(inputDir).resolve("front").resolve("title.txt")
         if (!f.exists()) {
 //            f = File("00", "title.txt").absolutePath
         }
@@ -543,14 +542,6 @@ object TextToUSFM {
         manifest.close()
     }
 
-    fun shortName(longPath: String): String {
-        var shortName = longPath
-        if (sourceDir in longPath && sourceDir != longPath) {
-            shortName = longPath.substring(sourceDir.length + 1)
-        }
-        return shortName
-    }
-
     fun writeHeader(usfmfile: File, bookId: String, bookTitle: String) {
         usfmfile.appendText("\\id $bookId\n\\ide UTF-8\n")
         usfmfile.appendText("\\h $bookTitle\n")
@@ -587,10 +578,11 @@ object TextToUSFM {
         // dumpChapterTitles(titles, titlesPath)
     }
 
-    fun convertFolder(folder: String?) {
-        val currentFolder = folder ?: System.getProperty("user.dir")
+    fun convertFolder(folder: String, outputDir: String) {
+        inputDir = folder
+        targetDir = outputDir
         try {
-            File(currentFolder).walk().forEach { file ->
+            File(inputDir).walk().forEach { file ->
                 if (file.isDirectory && isBookFolder(file.absolutePath)) {
                     println("Converting: ${file.absolutePath}\n")
                     val bookId = getBookId(file.absolutePath)
@@ -629,19 +621,17 @@ object TextToUSFM {
         return File(targetDir).resolve("projects.yaml").toString()
     }
 
-    fun convert() {
-        if (!File(targetDir).isDirectory) {
-            File(targetDir).mkdir()
-        }
+    fun convert(dir: String, outputDir: String) {
+        targetDir = outputDir
+        File(targetDir).mkdir()
         File(makeManifestPath()).delete()
 
-        val dir = System.getProperty("user.dir")
         if (isBookFolder(dir)) {
-            convertFolder(dir)
+            convertFolder(dir, outputDir)
         } else {
             File(dir).listFiles()?.forEach { folder ->
                 if (isBookFolder(folder.absolutePath)) {
-                    convertFolder(folder.absolutePath)
+                    convertFolder(folder.absolutePath, outputDir)
                 }
             }
         }
