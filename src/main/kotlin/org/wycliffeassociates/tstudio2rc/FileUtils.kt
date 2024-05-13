@@ -24,10 +24,6 @@ fun loadJsonObject(path: String): Map<String, Any> {
     return mapper.readValue(File(path))
 }
 
-fun addErrorMessage(message: String) {
-
-}
-
 fun getVersification(): Map<String, BookVersification> {
     val mapper = ObjectMapper(JsonFactory())
         .registerKotlinModule()

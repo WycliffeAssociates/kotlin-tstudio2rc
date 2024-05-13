@@ -42,9 +42,10 @@ class ConvertUseCase {
 
         manifest.projects.forEach { p ->
             if (p.identifier == projectSlug) {
+                p.title = rc.manifest.project.name
                 p.path = projectPath
                 p.sort = verseCounts[projectSlug.uppercase()]?.sort ?: 0
-                p.versification = "ufw"
+                p.versification = "ulb"
                 p.categories = listOf("bible-$anthology")
             }
         }
