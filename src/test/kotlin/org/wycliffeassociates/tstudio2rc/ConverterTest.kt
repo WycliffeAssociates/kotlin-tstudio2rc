@@ -61,14 +61,32 @@ class ConverterTest {
     fun testConvertTsFile() {
         val input = getResourceFile()
         val result = ConvertUseCase().convertToOratureFile(input, outputDir)
-        ResourceContainer.load(result).use { rc ->
-            assertEquals(dublinCore, rc.manifest.dublinCore)
-            assertEquals(mutableListOf(project), rc.manifest.projects)
-            assertEquals(checking, rc.manifest.checking)        }
+        try {
+            ResourceContainer.load(result).use { rc ->
+                assertEquals(dublinCore, rc.manifest.dublinCore)
+                assertEquals(mutableListOf(project), rc.manifest.projects)
+                assertEquals(checking, rc.manifest.checking)
+
+                rc.accessor.getReader("66-JUD.usfm")
+                    .use {
+                        val bookText = it.readText()
+                        assertEquals(getSampleBookContent(), bookText)
+                    }
+            }
+        } finally {
+            result.delete()
+            outputDir.deleteRecursively()
+        }
     }
 
     private fun getResourceFile(): File {
-        val path = javaClass.classLoader.getResource("aac_jud_text_ulb.tstudio").file
+        val path = javaClass.classLoader.getResource("aac_jud_text_ulb.tstudio")!!.file
         return File(path)
+    }
+
+    private fun getSampleBookContent(): String {
+        return File(
+            javaClass.classLoader.getResource("66-JUD.usfm")!!.file
+        ).readText()
     }
 }
