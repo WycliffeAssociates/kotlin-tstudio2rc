@@ -11,7 +11,7 @@ class ConvertUseCase {
 
     private val verseCounts = getVersification()
 
-    fun convertToOratureFile(inputFile: File, outputDir: File): File {
+    fun convertToRCFile(inputFile: File, outputDir: File): File {
         val tempDir = Files.createTempDirectory("tempDir").toFile()
 
         val fileNameNoExt = inputFile.nameWithoutExtension
