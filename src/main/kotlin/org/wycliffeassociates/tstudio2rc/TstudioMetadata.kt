@@ -14,7 +14,7 @@ import org.wycliffeassociates.tstudio2rc.serializable.TargetLanguage
 import java.io.File
 import java.time.LocalDate
 
-class TstudioMetadata(path: String) {
+internal class TstudioMetadata(path: String) {
 
     // navigate to project's root directory
     private val projectDir = File(path)

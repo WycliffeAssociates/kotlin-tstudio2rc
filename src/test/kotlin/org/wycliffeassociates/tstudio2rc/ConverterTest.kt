@@ -60,7 +60,7 @@ class ConverterTest {
     @Test
     fun testConvertTsFile() {
         val input = getResourceFile()
-        val result = ConvertUseCase().convertToRCFile(input, outputDir)
+        val result = Converter().convertToRC(input, outputDir)
         try {
             ResourceContainer.load(result).use { rc ->
                 assertEquals(dublinCore, rc.manifest.dublinCore)

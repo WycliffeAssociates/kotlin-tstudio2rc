@@ -7,11 +7,14 @@ import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import java.io.File
 import java.nio.file.Files
 
-class ConvertUseCase {
+/**
+ * API for converting a tstudio project to resource container(s).
+ */
+class Converter {
 
     private val verseCounts = getVersification()
 
-    fun convertToRCFile(inputFile: File, outputDir: File): File {
+    fun convertToRC(inputFile: File, outputDir: File): File {
         val tempDir = Files.createTempDirectory("tempDir").toFile()
 
         val fileNameNoExt = inputFile.nameWithoutExtension
@@ -40,7 +43,7 @@ class ConvertUseCase {
         return zipFile
     }
 
-    fun convertDir(inputDir: File, outputDir: File): File {
+    fun convertDirToRC(inputDir: File, outputDir: File): File {
         val outputRc = outputDir.resolve("${inputDir.name}.zip")
 
         val tempConvertDir = outputDir.resolve(inputDir.name)

@@ -13,21 +13,14 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
-fun loadYamlObject(path: String): Map<String, Any> {
-    val mapper = ObjectMapper(YAMLFactory())
-        .registerKotlinModule()
-
-    return mapper.readValue(File(path))
-}
-
-fun loadJsonObject(path: String): Map<String, Any> {
+internal fun loadJsonObject(path: String): Map<String, Any> {
     val mapper = ObjectMapper(JsonFactory())
         .registerKotlinModule()
 
     return mapper.readValue(File(path))
 }
 
-fun getVersification(): Map<String, BookVersification> {
+internal fun getVersification(): Map<String, BookVersification> {
     val mapper = ObjectMapper(JsonFactory())
         .registerKotlinModule()
 
@@ -37,11 +30,11 @@ fun getVersification(): Map<String, BookVersification> {
 }
 
 // Returns true if the specified path looks like a collection of chapter folders
-fun isBookFolder(path: String): Boolean {
+internal fun isBookFolder(path: String): Boolean {
     return File(path).resolve("front").isDirectory || File(path).resolve("01").isDirectory
 }
 
-fun zipDirectory(sourceDir: File, zipFile: File) {
+internal fun zipDirectory(sourceDir: File, zipFile: File) {
     zipFile.createNewFile()
     ZipOutputStream(zipFile.outputStream()).use { zos ->
         sourceDir.walkTopDown().forEach { file ->
@@ -57,7 +50,7 @@ fun zipDirectory(sourceDir: File, zipFile: File) {
     }
 }
 
-fun unzipFile(file: File, destinationDir: File) {
+internal fun unzipFile(file: File, destinationDir: File) {
     ZipFile(file).use { zip ->
         zip.entries().asSequence().forEach { entry ->
             val entryDestination = Paths.get(destinationDir.invariantSeparatorsPath, entry.name)
