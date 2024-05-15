@@ -1,5 +1,10 @@
 package org.wycliffeassociates.tstudio2rc
 
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.wycliffeassociates.tstudio2rc.serializable.BookVersification
 import java.io.BufferedWriter
 import java.io.File
 
@@ -640,5 +645,17 @@ internal class TextToUSFM {
         }
         dumpContributors()
         dumpProjects()
+    }
+
+    companion object {
+
+        fun getVersification(): Map<String, BookVersification> {
+            val mapper = ObjectMapper(JsonFactory())
+                .registerKotlinModule()
+
+            val path = javaClass.classLoader.getResource("verse_counts.json").file
+
+            return mapper.readValue(File(path))
+        }
     }
 }

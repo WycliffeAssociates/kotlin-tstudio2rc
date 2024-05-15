@@ -20,15 +20,6 @@ internal fun loadJsonObject(path: String): Map<String, Any> {
     return mapper.readValue(File(path))
 }
 
-internal fun getVersification(): Map<String, BookVersification> {
-    val mapper = ObjectMapper(JsonFactory())
-        .registerKotlinModule()
-
-    val path = BookVersification::class.java.classLoader.getResource("verse_counts.json").file
-
-    return mapper.readValue(File(path))
-}
-
 // Returns true if the specified path looks like a collection of chapter folders
 internal fun isBookFolder(path: String): Boolean {
     return File(path).resolve("front").isDirectory || File(path).resolve("01").isDirectory
