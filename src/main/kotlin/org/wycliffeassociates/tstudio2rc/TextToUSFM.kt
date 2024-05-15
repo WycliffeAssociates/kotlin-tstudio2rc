@@ -266,7 +266,7 @@ internal class TextToUSFM {
         var modifiedSection = section
         modifiedSection = spaceDotRe.replace(modifiedSection) { it.value.replace(" ", "") }
         modifiedSection = jammed.replace(modifiedSection) {
-            if (it.groupValues[1] !in "0123456789") {
+            if ((it.groupValues.getOrNull(1) ?: "") !in "0123456789") {
                 "${it.groupValues[0]} ${it.groupValues[1]}"
             } else {
                 it.value
@@ -653,9 +653,10 @@ internal class TextToUSFM {
             val mapper = ObjectMapper(JsonFactory())
                 .registerKotlinModule()
 
-            val path = javaClass.classLoader.getResource("verse_counts.json").file
-
-            return mapper.readValue(File(path))
+            val stream = TextToUSFM::class.java.classLoader.getResourceAsStream("verse_counts.json")
+            stream.use {
+                return mapper.readValue(it)
+            }
         }
     }
 }
