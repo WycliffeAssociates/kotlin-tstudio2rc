@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import java.io.File
 import java.nio.file.Files
+import java.util.zip.ZipFile
 
 /**
  * API for converting a tstudio project to resource container(s).
@@ -124,5 +125,23 @@ class Converter {
                 f.isDirectory && isBookFolder(f.invariantSeparatorsPath)
             }
             ?.invariantSeparatorsPath
+    }
+
+    companion object {
+        fun isValidFormat(file: File): Boolean {
+            return when {
+                file.isFile && TstudioFileFormat.isSupported(file.extension) -> {
+                    ZipFile(file).use {
+                        it.entries().asSequence().any { entry ->
+                            entry.name.contains("manifest.json")
+                        }
+                    }
+                }
+
+                file.isDirectory -> file.walk().any { it.name == "manifest.json" }
+
+                else -> false
+            }
+        }
     }
 }
