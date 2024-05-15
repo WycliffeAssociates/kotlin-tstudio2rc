@@ -44,12 +44,13 @@ internal fun zipDirectory(sourceDir: File, zipFile: File) {
 internal fun unzipFile(file: File, destinationDir: File) {
     ZipFile(file).use { zip ->
         zip.entries().asSequence().forEach { entry ->
-            val entryDestination = Paths.get(destinationDir.invariantSeparatorsPath, entry.name)
+            val entryDestination = destinationDir.resolve(entry.name)
+            entryDestination.parentFile.mkdirs()
             if (entry.isDirectory) {
-                Files.createDirectories(entryDestination)
+                entryDestination.mkdir()
             } else {
                 zip.getInputStream(entry).use { input ->
-                    Files.newOutputStream(entryDestination).use { output ->
+                    Files.newOutputStream(entryDestination.toPath()).use { output ->
                         input.copyTo(output)
                     }
                 }

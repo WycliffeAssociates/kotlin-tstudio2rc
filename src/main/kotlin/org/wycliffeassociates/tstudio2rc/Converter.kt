@@ -19,9 +19,8 @@ class Converter {
     fun convertToRC(inputFile: File, outputDir: File): File {
         val tempDir = Files.createTempDirectory("tempDir").toFile()
 
-        val fileNameNoExt = inputFile.nameWithoutExtension
-        val rcConvertDir = outputDir.resolve(fileNameNoExt)
-        val outputFilePath = outputDir.resolve("RC")
+        val rcConvertDir = outputDir.resolve(inputFile.nameWithoutExtension)
+        val outputFile = outputDir.resolve("${inputFile.nameWithoutExtension}.zip")
         rcConvertDir.mkdirs()
 
         val sourceDir = extractTstudio(inputFile, tempDir)
@@ -35,14 +34,12 @@ class Converter {
             .registerKotlinModule()
         mapper.writeValue(manifestFile, manifest)
 
-        val zipFileName = outputFilePath.absolutePath
-        val zipFile = File("$zipFileName.zip")
-        zipDirectory(rcConvertDir, zipFile)
+        zipDirectory(rcConvertDir, outputFile)
 
         tempDir.deleteRecursively()
         rcConvertDir.deleteRecursively()
 
-        return zipFile
+        return outputFile
     }
 
     fun convertDirToRC(inputDir: File, outputDir: File): File {
