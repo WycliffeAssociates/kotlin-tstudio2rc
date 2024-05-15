@@ -9,13 +9,14 @@ import org.wycliffeassociates.resourcecontainer.entity.Source
 import java.io.File
 import java.time.LocalDate
 import kotlin.io.path.createTempDirectory
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ConverterTest {
 
-    private val outputDir = createTempDirectory("test").toFile()
-        .apply { deleteOnExit() }
+    private lateinit var outputDir: File
 
     private val dublinCore = DublinCore(
         type = "book",
@@ -75,8 +76,42 @@ class ConverterTest {
             }
         } finally {
             result.delete()
-            outputDir.deleteRecursively()
         }
+    }
+
+    @Test
+    fun testConvertTsDir() {
+        val tsFile = getResourceFile()
+        val unzipDir = outputDir.resolve("tstudio-dir").apply { mkdir() }
+        unzipFile(tsFile, unzipDir)
+        val inputDir = unzipDir.walk().first { isBookFolder(it.invariantSeparatorsPath) }
+
+        val result = Converter().convertDirToRC(inputDir, outputDir)
+        try {
+            ResourceContainer.load(result).use { rc ->
+                assertEquals(dublinCore, rc.manifest.dublinCore)
+                assertEquals(mutableListOf(project), rc.manifest.projects)
+                assertEquals(checking, rc.manifest.checking)
+
+                rc.accessor.getReader("66-JUD.usfm")
+                    .use {
+                        val bookText = it.readText()
+                        assertEquals(getSampleBookContent(), bookText)
+                    }
+            }
+        } finally {
+            result.delete()
+        }
+    }
+
+    @BeforeTest
+    fun setup() {
+        outputDir = createTempDirectory("test").toFile()
+    }
+
+    @AfterTest
+    fun cleanUp() {
+        outputDir.deleteRecursively()
     }
 
     private fun getResourceFile(): File {

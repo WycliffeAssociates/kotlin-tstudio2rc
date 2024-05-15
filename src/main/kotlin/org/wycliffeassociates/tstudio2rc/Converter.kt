@@ -42,6 +42,10 @@ class Converter {
         return outputFile
     }
 
+    /**
+     * Converts the project's root directory to a Resource Container.
+     * The directory should contain a manifest file and chapter directories.
+     */
     fun convertDirToRC(inputDir: File, outputDir: File): File {
         val outputRc = outputDir.resolve("${inputDir.name}.zip")
 
