@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.wycliffeassociates.tstudio2rc.serializable.BookVersification
+import org.wycliffeassociates.tstudio2rc.entity.BookVersification
 import java.io.BufferedWriter
 import java.io.File
 

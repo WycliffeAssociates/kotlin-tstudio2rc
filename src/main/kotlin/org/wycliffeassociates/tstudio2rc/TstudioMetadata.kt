@@ -9,8 +9,8 @@ import org.wycliffeassociates.resourcecontainer.entity.DublinCore
 import org.wycliffeassociates.resourcecontainer.entity.Language
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import org.wycliffeassociates.resourcecontainer.entity.Source
-import org.wycliffeassociates.tstudio2rc.serializable.ProjectManifest
-import org.wycliffeassociates.tstudio2rc.serializable.TargetLanguage
+import org.wycliffeassociates.tstudio2rc.entity.ProjectManifest
+import org.wycliffeassociates.tstudio2rc.entity.TargetLanguage
 import java.io.File
 import java.time.LocalDate
 

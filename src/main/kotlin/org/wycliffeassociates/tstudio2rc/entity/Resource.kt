@@ -1,4 +1,4 @@
-package org.wycliffeassociates.tstudio2rc.serializable
+package org.wycliffeassociates.tstudio2rc.entity
 
 data class Resource(
     val id: String,
