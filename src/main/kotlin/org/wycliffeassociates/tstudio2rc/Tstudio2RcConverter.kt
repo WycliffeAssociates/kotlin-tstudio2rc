@@ -6,8 +6,8 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import org.wycliffeassociates.tstudio2rc.TextToUSFM.Companion.getVersification
 import java.io.File
-import java.nio.file.Files.createTempDirectory
 import java.util.zip.ZipFile
+import kotlin.io.path.createTempDirectory
 
 /**
  * API for converting a tstudio project to resource container(s).
@@ -17,6 +17,7 @@ object Tstudio2RcConverter {
     private val verseCounts = getVersification()
 
     fun convertFileToRC(inputFile: File, outputDir: File): File {
+        outputDir.mkdirs()
         val tempDir = createTempDirectory(outputDir.toPath(), "extract-temp").toFile()
 
         val rcConvertDir = outputDir.resolve(inputFile.nameWithoutExtension)

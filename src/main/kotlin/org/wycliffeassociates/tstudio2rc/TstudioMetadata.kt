@@ -76,7 +76,7 @@ internal class TstudioMetadata(path: String) {
                 title = tsManifest.project.name,
                 sort = 1,
                 path = projectPath,
-                versification = "kjv",
+                versification = "ulb",
                 categories = listOf()
             )
         }
