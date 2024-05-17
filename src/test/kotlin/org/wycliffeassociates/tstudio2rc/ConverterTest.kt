@@ -61,7 +61,7 @@ class ConverterTest {
     @Test
     fun testConvertTsFile() {
         val input = getResourceFile()
-        val result = Converter().convertToRC(input, outputDir)
+        val result = Tstudio2RcConverter.convertFileToRC(input, outputDir)
         try {
             ResourceContainer.load(result).use { rc ->
                 assertEquals(dublinCore, rc.manifest.dublinCore)
@@ -86,7 +86,7 @@ class ConverterTest {
         unzipFile(tsFile, unzipDir)
         val inputDir = unzipDir.walk().first { isBookFolder(it.invariantSeparatorsPath) }
 
-        val result = Converter().convertDirToRC(inputDir, outputDir)
+        val result = Tstudio2RcConverter.convertDirToRC(inputDir, outputDir)
         try {
             ResourceContainer.load(result).use { rc ->
                 assertEquals(dublinCore, rc.manifest.dublinCore)

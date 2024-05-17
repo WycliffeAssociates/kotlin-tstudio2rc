@@ -13,6 +13,8 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
+internal const val MANIFEST_YAML = "manifest.yaml"
+
 internal fun loadJsonObject(path: String): Map<String, Any> {
     val mapper = ObjectMapper(JsonFactory())
         .registerKotlinModule()

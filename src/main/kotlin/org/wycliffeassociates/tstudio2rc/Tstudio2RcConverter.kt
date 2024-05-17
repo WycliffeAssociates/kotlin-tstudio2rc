@@ -6,18 +6,18 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.resourcecontainer.entity.Manifest
 import org.wycliffeassociates.tstudio2rc.TextToUSFM.Companion.getVersification
 import java.io.File
-import java.nio.file.Files
+import java.nio.file.Files.createTempDirectory
 import java.util.zip.ZipFile
 
 /**
  * API for converting a tstudio project to resource container(s).
  */
-class Converter {
+object Tstudio2RcConverter {
 
     private val verseCounts = getVersification()
 
-    fun convertToRC(inputFile: File, outputDir: File): File {
-        val tempDir = Files.createTempDirectory("tempDir").toFile()
+    fun convertFileToRC(inputFile: File, outputDir: File): File {
+        val tempDir = createTempDirectory(outputDir.toPath(), "extract-temp").toFile()
 
         val rcConvertDir = outputDir.resolve(inputFile.nameWithoutExtension)
         val outputFile = outputDir.resolve("${inputFile.nameWithoutExtension}.zip")
@@ -29,7 +29,7 @@ class Converter {
 
         // manifest.yaml
         val manifest = buildManifest(sourceDir)
-        val manifestFile = rcConvertDir.resolve("manifest.yaml")
+        val manifestFile = rcConvertDir.resolve(MANIFEST_YAML)
         val mapper = ObjectMapper(YAMLFactory())
             .registerKotlinModule()
         mapper.writeValue(manifestFile, manifest)
@@ -57,7 +57,7 @@ class Converter {
 
         // manifest.yaml
         val manifest = buildManifest(inputDir.invariantSeparatorsPath)
-        val manifestFile = tempConvertDir.resolve("manifest.yaml")
+        val manifestFile = tempConvertDir.resolve(MANIFEST_YAML)
         val mapper = ObjectMapper(YAMLFactory())
             .registerKotlinModule()
         mapper.writeValue(manifestFile, manifest)
@@ -129,21 +129,19 @@ class Converter {
             ?.invariantSeparatorsPath
     }
 
-    companion object {
-        fun isValidFormat(file: File): Boolean {
-            return when {
-                file.isFile && TstudioFileFormat.isSupported(file.extension) -> {
-                    ZipFile(file).use {
-                        it.entries().asSequence().any { entry ->
-                            entry.name.contains("manifest.json")
-                        }
+    fun isValidFormat(file: File): Boolean {
+        return when {
+            file.isFile && TstudioFileFormat.isSupported(file.extension) -> {
+                ZipFile(file).use {
+                    it.entries().asSequence().any { entry ->
+                        entry.name.contains("manifest.json")
                     }
                 }
-
-                file.isDirectory -> file.walk().any { it.name == "manifest.json" }
-
-                else -> false
             }
+
+            file.isDirectory -> file.walk().any { it.name == "manifest.json" }
+
+            else -> false
         }
     }
 }
