@@ -98,7 +98,7 @@ object Tstudio2RcConverter {
                 p.title = project.title.ifEmpty { projectSlug }
                 p.path = projectPath
                 p.sort = verseCounts[projectSlug.uppercase()]?.sort ?: 0
-                p.versification = "ulb"
+                p.versification = "ufw"
                 p.categories = listOf("bible-$anthology")
             }
         }

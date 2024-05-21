@@ -49,7 +49,7 @@ class ConverterTest {
     )
     private val project = Project(
         title = "Jude",
-        versification = "ulb",
+        versification = "ufw",
         identifier = "jud",
         sort = 65,
         path = "./66-JUD.usfm",
