@@ -40,7 +40,7 @@ class ConverterTest {
         ),
         rights = "CC BY-SA 4.0",
         creator = "BTT-Writer",
-        contributor = mutableListOf(),
+        contributor = mutableListOf("test"),
         relation = mutableListOf(),
         publisher = "Door43",
         issued = LocalDate.now().toString(),
