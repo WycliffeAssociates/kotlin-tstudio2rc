@@ -1,8 +1,8 @@
 package org.wycliffeassociates.tstudio2rc
 
 import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
 import java.nio.file.Files
@@ -12,11 +12,11 @@ import java.util.zip.ZipOutputStream
 
 internal const val MANIFEST_YAML = "manifest.yaml"
 
-internal fun loadJsonObject(path: String): Map<String, Any> {
+internal fun loadJson(path: String): JsonNode {
     val mapper = ObjectMapper(JsonFactory())
         .registerKotlinModule()
 
-    return mapper.readValue(File(path))
+    return mapper.readTree(File(path))
 }
 
 // Returns true if the specified path looks like a collection of chapter folders

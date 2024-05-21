@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.wycliffeassociates.tstudio2rc.entity.BookVersification
+import com.fasterxml.jackson.module.kotlin.convertValue
 import java.io.BufferedWriter
 import java.io.File
 
@@ -372,11 +373,13 @@ internal class TextToUSFM {
     fun parseManifest(path: String): String {
         var bookId = ""
         try {
-            val manifest = loadJsonObject(path)
-            bookId = manifest.get("project").let { it as Map<String, String> }.get("id")
+            val manifest = loadJson(path)
+            bookId = manifest.get("project").get("id").asText()
                 ?: throw Exception("Error parsing manifest")
 
-            val translators = manifest.get("translators") as List<String>
+            val mapper = ObjectMapper(JsonFactory()).registerKotlinModule()
+            val translatorsNode = manifest.get("translators")
+            val translators: List<String> = mapper.convertValue(translatorsNode)
             translators.forEach {
                 contributors.add(it)
             }
