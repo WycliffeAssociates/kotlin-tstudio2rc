@@ -1,9 +1,11 @@
 plugins {
+    id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+    id 'maven-publish'
 }
 
 group = 'org.wycliffeassociates'
-version = '1.0-SNAPSHOT'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -27,4 +29,45 @@ test {
 }
 kotlin {
     jvmToolchain(21)
+}
+
+
+task sourceJar(type: Jar) {
+    archiveClassifier = "sources"
+    from('src/main/kotlin') {
+        include '**'
+    }
+}
+afterEvaluate {
+    publishing {
+        publications {
+            mavenRelease(MavenPublication) {
+                from components.kotlin
+                groupId = group
+                artifactId = 'kotlin-tstudio2rc'
+                version = version
+                artifact sourceJar
+                pom {
+                    name = 'kotlin-tstudio2rc'
+                    licenses {
+                        license {
+                            name = 'MIT License'
+                            url = 'https://raw.githubusercontent.com/AnonymousWalker/kotlin-tstudio2rc/main/LICENSE'
+                            distribution = 'repo'
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                url = version.endsWith('SNAPSHOT') ? "${System.getenv("NEXUS_URL")}/repository/maven-snapshots/"
+                        : "${System.getenv("NEXUS_URL")}/repository/maven-releases/"
+                credentials {
+                    username = System.getenv("NEXUS_USER")
+                    password  = System.getenv("NEXUS_PASSWORD")
+                }
+            }
+        }
+    }
 }
