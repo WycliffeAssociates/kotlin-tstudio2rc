@@ -1,7 +1,9 @@
 package org.wycliffeassociates.tstudio2rc.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class SourceTranslation(
     @JsonProperty("language_id")
     val languageId: String,
