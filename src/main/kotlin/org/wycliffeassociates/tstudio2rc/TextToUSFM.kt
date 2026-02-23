@@ -450,7 +450,7 @@ internal class TextToUSFM {
     fun listChunks(chap: File): List<String> {
         val chunks = mutableListOf<String>()
         var longest = 0
-        chap.listFiles()?.forEach { filename ->
+        chap.listFiles()?.sortedBy { it.name }?.forEach { filename ->
             val chunky = Regex("""(\d{2,3})\.txt""").find(filename.name)
             if (chunky != null && filename.name != "00.txt") {
                 val chunk = chunky.groupValues[1]
